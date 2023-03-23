@@ -14,6 +14,9 @@ Andrew ID: ziangc, harveyme, csuzuki2
 
 ## Tips for Setup
 
+### [turtlebot3](https://emanual.robotis.com/docs/en/platform/turtlebot3/quick-start/)
+
+
 ### Github
 * Edit the `.gitignore` to skip any file that is larger than 100M. (Mainly the zip for backup purpose.)
 ```Shell
