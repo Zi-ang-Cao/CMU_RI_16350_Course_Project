@@ -8,6 +8,10 @@
 #define DYNAMIC_OBSTACLE_PLANNER_H
 
 #include <ros/ros.h>
+#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
+#include <nav_msgs/Odometry.h>
+#include <nav_msgs/OccupancyGrid.h>
+#include <geometry_msgs/PoseStamped.h>
 using namespace std;
 
 namespace dynamic_obstacle_planner{
@@ -18,17 +22,18 @@ namespace dynamic_obstacle_planner{
 
 		ros::NodeHandle nh_;
 
-		ros::Timer rrtTimer_;
-		ros::Timer visTimer_;
-		ros::Timer pidTimer_;
+		ros::Timer plannerTimer_;
+		//ros::Timer visTimer_;
+		//ros::Timer pidTimer_;
 
-		ros::Publisher rrtPathPub_;
+		ros::Publisher plannerPub_;
 		ros::Publisher cmdvelPub_;
 		ros::Subscriber odomSub_;
-		ros::Subscriber clickedPointSub_; 
+		ros::Subscriber clickedPointSub_;
+		ros::Subscriber map_;
 
-		//nav_msgs::Odometry odom_;
-		//geometry_msgs::PoseStamped goal_;
+		nav_msgs::Odometry odom_;
+		geometry_msgs::PoseStamped goal_;
 		//nav_msgs::Path rrtPathMsg_;
 
 
@@ -56,11 +61,10 @@ namespace dynamic_obstacle_planner{
 		void registerCallback();
 		void run();
 
-		//void odomCB(const nav_msgs::Odometry::ConstPtr& msg);
-		//void clickedPointCB(const geometry_msgs::PoseStamped::ConstPtr& cp);
-		void rrtCB(const ros::TimerEvent&);
-		void visCB(const ros::TimerEvent&);
-		void PID(const ros::TimerEvent&);
+		void odomCB(const nav_msgs::Odometry::ConstPtr& msg);
+		void clickedPointCB(const geometry_msgs::PoseStamped::ConstPtr& cp);
+		void mapCallback(const nav_msgs::OccupancyGrid::ConstPtr& msg);
+		void plannerCB(const ros::TimerEvent&);
 	};
 }
 
