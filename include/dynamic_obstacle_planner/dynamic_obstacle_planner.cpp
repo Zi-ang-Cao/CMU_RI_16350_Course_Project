@@ -64,3 +64,42 @@ namespace dynamic_obstacle_planner{
 	}
 
 }
+
+// Define a function that linearly interpolates from the start condition to goal condition
+std::vector<double> linearInterpolation(const std::vector<double>& start, const std::vector<double>& goal, const double& stepSize) {
+    std::vector<double> interpolated;
+    int numSteps = static_cast<int>(1.0 / stepSize);
+
+    for (int i = 0; i <= numSteps; i++) {
+        double t = static_cast<double>(i) / numSteps;
+        std::vector<double> temp;
+        for (int j = 0; j < start.size(); j++) {
+            double val = start[j] + t * (goal[j] - start[j]);
+            temp.push_back(val);
+        }
+        interpolated.insert(interpolated.end(), temp.begin(), temp.end());
+    }
+
+    return interpolated;
+}
+
+void harveyplanner(const std::vector<double>& startCond, const std::vector<double>& goalCond, const double& stepSize) {
+    std::vector<double> interpolated = linearInterpolation(startCond, goalCond, stepSize);
+
+    // Print the interpolated values
+    std::cout << "Interpolated values:" << std::endl;
+    for (int i = 0; i < interpolated.size(); i++) {
+        std::cout << interpolated[i] << " ";
+    }
+    std::cout << std::endl;
+}
+
+int main() {
+    std::vector<double> start = {1.0, 2.0, 3.0};
+    std::vector<double> goal = {4.0, 5.0, 6.0};
+    double stepSize = 0.1;
+
+    harveyplanner(start, goal, stepSize);
+
+    return 0;
+}
