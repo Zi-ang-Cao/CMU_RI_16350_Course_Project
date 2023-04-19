@@ -104,7 +104,7 @@ void incrementalPlanner(const vector<double>& startCond, const vector<double>& g
     vector<double> currCond = startCond;
     // if there is an obstacle with in the safety margin (3*the robot size)
         // plan around the obstacle to the nearest increment that does not violate the safety margin
-    
+
 
 }
 
@@ -150,15 +150,13 @@ pair<double,double> closestObstacle(const pair<double,double>& robPos, const vec
 bool withinBarrier(pair<double,double> closestPoint, vector<pair<double,double>> barrier) 
 {
     // Winding Number Algorithm
-
-    // Define Obstacle Position (Check Node Table)
     
     int i, j, nvert = barrier.size();
     bool c = false;
     for (i = 0, j = nvert - 1; i < nvert; j = i++)
     {
-        if (((barrier[i].second > point.second) != (barrier[j].second > point.second)) && 
-        (point.first < (barrier[j].first - barrier[i].first) * (point.second - barrier[i].second) / (barrier[j].second - barrier[i].second) + barrier[i].first))
+        if (((barrier[i].second > closestPoint.second) != (barrier[j].second > closestPoint.second)) && 
+        (closestPoint.first < (barrier[j].first - barrier[i].first) * (closestPoint.second - barrier[i].second) / (barrier[j].second - barrier[i].second) + barrier[i].first))
         {
             c = !c;
         }
@@ -166,3 +164,35 @@ bool withinBarrier(pair<double,double> closestPoint, vector<pair<double,double>>
     return c;
 }
 
+// Define the function to find the closest safe point on the path
+pair<double, double> findClosestSafePoint(const pair<double,double>& currentPos, const vector<pair<double,double>>& path, const vector<pair<double,double>>& obstacles, const double robotRadius) 
+{
+    // Find the closest obstacle to the current position
+    pair<double,double> closestObstacle;
+    double minDist = numeric_limits<double>::max();
+    for (const auto& obstacle : obstacles) {
+        double dist = sqrt(pow(obstacle.first - currentPos.first, 2) + pow(obstacle.second - currentPos.second, 2));
+        if (dist < minDist) {
+            minDist = dist;
+            closestObstacle = obstacle;
+        }
+    }
+
+    // If the closest obstacle is more than 3 times the robot radius away, return the current position
+    if (minDist > 3 * robotRadius) {
+        return currentPos;
+    }
+
+    // Find the closest point on the path to the closest obstacle that is safe
+    pair<double,double> closestSafePoint;
+    double closestSafeDist = numeric_limits<double>::max();
+    for (const auto& pathPoint : path) {
+        double dist = sqrt(pow(pathPoint.first - closestObstacle.first, 2) + pow(pathPoint.second - closestObstacle.second, 2));
+        if (dist > 3 * robotRadius && dist < closestSafeDist) {
+            closestSafeDist = dist;
+            closestSafePoint = pathPoint;
+        }
+    }
+
+    return closestSafePoint;
+}
