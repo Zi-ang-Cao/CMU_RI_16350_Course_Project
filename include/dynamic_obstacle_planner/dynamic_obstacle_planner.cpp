@@ -7,6 +7,8 @@
 #include <math.h>
 #include <stdlib.h>
 #include <iostream>
+#include <vector>
+#include <cmath>
 
 using namespace std;
 
@@ -66,40 +68,101 @@ namespace dynamic_obstacle_planner{
 }
 
 // Define a function that linearly interpolates from the start condition to goal condition
-std::vector<double> linearInterpolation(const std::vector<double>& start, const std::vector<double>& goal, const double& stepSize) {
-    std::vector<double> interpolated;
+vector<double> linearInterpolation(double startX, double startY, double goalX, double goalY, double stepSize) {
+    vector<double> interpolated;
     int numSteps = static_cast<int>(1.0 / stepSize);
 
     for (int i = 0; i <= numSteps; i++) {
         double t = static_cast<double>(i) / numSteps;
-        std::vector<double> temp;
-        for (int j = 0; j < start.size(); j++) {
-            double val = start[j] + t * (goal[j] - start[j]);
-            temp.push_back(val);
-        }
+        vector<double> temp;
+        double x = startX + t * (goalX - startX);
+        double y = startY + t * (goalY - startY);
+        temp.push_back(x);
+        temp.push_back(y);
         interpolated.insert(interpolated.end(), temp.begin(), temp.end());
     }
 
     return interpolated;
 }
 
-void harveyplanner(const std::vector<double>& startCond, const std::vector<double>& goalCond, const double& stepSize) {
-    std::vector<double> interpolated = linearInterpolation(startCond, goalCond, stepSize);
+void harveyplannerCB(const vector<double>& startCond, const vector<double>& goalCond, const double& stepSize) 
+{
+    vector<double> interpolated = linearInterpolation(startX,  startY,  goalX,  goalY,  stepSize);
 
     // Print the interpolated values
-    std::cout << "Interpolated values:" << std::endl;
+    cout << "Interpolated values:" << endl;
     for (int i = 0; i < interpolated.size(); i++) {
-        std::cout << interpolated[i] << " ";
+        cout << interpolated[i] << " ";
     }
-    std::cout << std::endl;
+    cout << endl;
 }
 
-int main() {
-    std::vector<double> start = {1.0, 2.0, 3.0};
-    std::vector<double> goal = {4.0, 5.0, 6.0};
-    double stepSize = 0.1;
+void incrementalPlanner(const vector<double>& startCond, const vector<double>& goalCond, const double& stepSize, const double robotDim)
+{
+    vector<pair<double,double>> plan;
+    vector<double> goal = goalCond;
+    vector<double> currCond = startCond;
+    // if there is an obstacle with in the safety margin (3*the robot size)
+        // plan around the obstacle to the nearest increment that does not violate the safety margin
+    
 
-    harveyplanner(start, goal, stepSize);
-
-    return 0;
 }
+
+vector<pair<double,double>> genSemiCircleBarrier(const pair<double,double> robPos, const double robRad, const pair<double,double> nextRobPos)
+{
+    // Initialize Things
+    const double barRad = 3*robRad;
+    const int barRes = 50;
+    vector<pair<double,double>> barPoints;
+    // Determine Direction of the Robot
+    double robDir = atan2(nextRobPos.second() - robPos.second(),nextRobPos.first() - robPos.first());
+    // Determine the Orientation of the semi-circle
+    double barOrient = robDir + M_PI_2; // Make sure it's perpendicular
+    // Generate points along the semi-circle
+    for (int i = 0; i <= barRes; i++)
+    {
+        double angle = i*M_PI / barRes;
+        double x = robPos.first() + barRad*cos(angle + barOrient);
+        double y = robPos.second() + barRad*sin(angle + barOrient);
+        barPoints.push_back(make_pair(x,y));
+    }
+    return barPoints;
+}
+
+pair<double,double> closestObstacle(const pair<double,double>& robPos, const vector<pair<double,double>>& nodeTable)
+{
+    double minDist = numeric_limits<double>::max();
+    pair<double,double> closestPoint;
+
+    for (const auto& obstacle : nodeTable)
+    {
+        double dist = sqrt(pow(obstacle.first - point.first, 2) + pow(obstacle.second - point.second, 2));
+        if (dist < minDist)
+        {
+            minDist = dist;
+            closestPoint = obstacle;
+        }
+    }
+
+    return closestPoint;
+}
+
+bool withinBarrier(pair<double,double> closestPoint, vector<pair<double,double>> barrier) 
+{
+    // Winding Number Algorithm
+
+    // Define Obstacle Position (Check Node Table)
+    
+    int i, j, nvert = barrier.size();
+    bool c = false;
+    for (i = 0, j = nvert - 1; i < nvert; j = i++)
+    {
+        if (((barrier[i].second > point.second) != (barrier[j].second > point.second)) && 
+        (point.first < (barrier[j].first - barrier[i].first) * (point.second - barrier[i].second) / (barrier[j].second - barrier[i].second) + barrier[i].first))
+        {
+            c = !c;
+        }
+    }
+    return c;
+}
+
