@@ -108,22 +108,22 @@ void incrementalPlanner(const vector<double>& startCond, const vector<double>& g
 
 }
 
-vector<pair<double,double>> genSemiCircleBarrier(const pair<double,double> robPos, const double robRad, const pair<double,double> nextRobPos)
+vector<pair<double,double>> genSemiCircleBarrier(const pair<double,double> obPos, const double robRad, const pair<double,double> robPos)
 {
     // Initialize Things
     const double barRad = 3*robRad;
     const int barRes = 50;
     vector<pair<double,double>> barPoints;
     // Determine Direction of the Robot
-    double robDir = atan2(nextRobPos.second() - robPos.second(),nextRobPos.first() - robPos.first());
+    double robDir = atan2(robPos.second() - obPos.second(),robPos.first() - obPos.first());
     // Determine the Orientation of the semi-circle
     double barOrient = robDir + M_PI_2; // Make sure it's perpendicular
     // Generate points along the semi-circle
     for (int i = 0; i <= barRes; i++)
     {
         double angle = i*M_PI / barRes;
-        double x = robPos.first() + barRad*cos(angle + barOrient);
-        double y = robPos.second() + barRad*sin(angle + barOrient);
+        double x = obPos.first() + barRad*cos(angle + barOrient);
+        double y = obPos.second() + barRad*sin(angle + barOrient);
         barPoints.push_back(make_pair(x,y));
     }
     return barPoints;
@@ -147,16 +147,17 @@ pair<double,double> closestObstacle(const pair<double,double>& robPos, const vec
     return closestPoint;
 }
 
-bool withinBarrier(pair<double,double> closestPoint, vector<pair<double,double>> barrier) 
+bool withinBarrier(pair<double,double> robPos, vector<pair<double,double>> barrier) 
 {
     // Winding Number Algorithm
     
     int i, j, nvert = barrier.size();
     bool c = false;
-    for (i = 0, j = nvert - 1; i < nvert; j = i++)
+    for (i = 0, j = nvert - 1;
+    i < nvert; j = i++)
     {
-        if (((barrier[i].second > closestPoint.second) != (barrier[j].second > closestPoint.second)) && 
-        (closestPoint.first < (barrier[j].first - barrier[i].first) * (closestPoint.second - barrier[i].second) / (barrier[j].second - barrier[i].second) + barrier[i].first))
+        if (((barrier[i].second > robPos.second) != (barrier[j].second > robPos.second)) && 
+        (robPos.first < (barrier[j].first - barrier[i].first) * (robPos.second - barrier[i].second) / (barrier[j].second - barrier[i].second) + barrier[i].first))
         {
             c = !c;
         }
@@ -195,4 +196,40 @@ pair<double, double> findClosestSafePoint(const pair<double,double>& currentPos,
     }
 
     return closestSafePoint;
+}
+
+vector<pair<double,double>> modifyPathToAvoidBarrier(const vector<pair<double,double>>& plannedPath, const vector<pair<double,double>>& semiCircleBarrier, const double robRad)
+{
+    const double barRad = 3*robRad;
+    vector<pair<double,double>> modifiedPath;
+    // Check each point in the planned path
+    for (auto& point : plannedPath)
+    {
+        // Check if point lies inside the barrier
+        bool insideBarrier = false;
+        for (auto& barrierPoint : semiCircleBarrier)
+        {
+            double dist = sqrt(pow(point.first - barrierPoint.first, 2) + pow(point.second - barrierPoint.second, 2));
+            if (dist < robRad)
+            {
+                insideBarrier = true;
+                break;
+            }
+        }
+        // Modify the point if it lies inside the barrier
+        if (insideBarrier)
+        {
+            // Move the point away from the barrier along the tangent
+            double pointDir = atan2(point.second - obPos.second(), point.first - obPos.first());
+            double newPointX = obPos.first() + (barRad + robRad) * cos(pointDir);
+            double newPointY = obPos.second() + (barRad + robRad) * sin(pointDir);
+            modifiedPath.push_back(make_pair(newPointX, newPointY));
+        }
+        else
+        {
+            // Keep the original point if it lies outside the barrier
+            modifiedPath.push_back(point);
+        }
+    }
+    return modifiedPath;
 }
