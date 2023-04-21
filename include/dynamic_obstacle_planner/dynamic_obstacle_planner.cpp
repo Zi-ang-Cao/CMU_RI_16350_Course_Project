@@ -383,12 +383,12 @@ case 2: {
     // do_incremental_search
     pair<double,double> curPosi = make_pair(this->odom_.pose.pose.position.x, this->odom_.pose.pose.position.y);
     pair<double,double> goalPosi = make_pair(this->goal_.pose.position.x, this->goal_.pose.position.y);
-    goal_tolerance = 0.25*robRad
+    goal_tolerance = 1e-6;
     // We want to find nearest obstacle
-    double obPos = findClosestObstacle(curPosi, obstacles, robRad);
     while (curPosi != goalPosi)
     {
         AStarBaseline(&replan_pair_vec, curPosi, goalPosi);
+        double obPos = findClosestObstacle(curPosi, obstacles, robRad);
         if (this->near_dyn_obs)
         {
             // Generate circular barrier points
