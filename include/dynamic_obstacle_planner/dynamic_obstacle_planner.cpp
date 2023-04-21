@@ -296,6 +296,18 @@ pair<double, double> findClosestPointOnBarrier(const pair<double, double>& goal,
     return closestPoint;
 }
 
+double findClosestObstacle(const pair<double,double>& robPos, const vector<pair<double,double>>& obstacles, const double robotRadius)
+{
+    double minDist = numeric_limits<double>::max();
+    for (const auto& obstacle : obstacles) {
+        double dist = distance(point, obstacle) - robotRadius;
+        if (dist < minDist) {
+            minDist = dist;
+        }
+    }
+    return minDist;
+}
+
 
 vector<pair<double,double>> genBarrierPath(const pair<double,double> obPos, const double robRad, const pair<double,double> robPos, const pair<double,double> tempGoal, const vector<pair<double,double>> barrierPoints)
 {
@@ -338,19 +350,19 @@ vector<pair<double,double>> genBarrierPath(const pair<double,double> obPos, cons
                 // do_incremental_search
                 pair<double,double> curPosi = make_pair(this->odom_.pose.pose.position.x, this->odom_.pose.pose.position.y);
                 pair<double,double> goalPosi = make_pair(this->goal_.pose.position.x, this->goal_.pose.position.y);
-                // We want to find nearest obstacle
-                // insert function here
+                // We want to find nea  rest obstacle
+                double obPos = findClosestObstacle(curPosi, obstacles, robRad)
                 while (curPosi != goalPosi)
                 {
                     AStarBaseline(&replan_pair_vec, curPosi, goalPosi);
                     if (this->near_dyn_obs)
                     {
                         // Generate circular barrier points
-                        vector<pair<double,double>> barrierPoints = genCircleBarrier(obPos, robRad, robPos);
+                        vector<pair<double,double>> barrierPoints = genCircleBarrier(obPos, curPosi, robPos);
                         // Generate temporary goal
-                        pair<double, double> tempGoal = findClosestPointOnBarrier(const pair<double, double>& goal, const vector<pair<double, double>>& barrierPoints) 
+                        pair<double, double> tempGoal = findClosestPointOnBarrier(goalPosi, barrierPoints) 
                         // Generate path
-                        vector<pair<double,double>> barrierPath = genBarrierPath(obPos, robRad, robPos, tempGoal, barrierPoints)
+                        vector<pair<double,double>> barrierPath = genBarrierPath(obPos, robRad, curPosi, tempGoal, barrierPoints)
                         // Interpoolte through that path
                     }
                 }
