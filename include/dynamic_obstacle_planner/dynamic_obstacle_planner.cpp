@@ -381,50 +381,64 @@ vector<pair<double,double>> genBarrierPath(const pair<double,double> obPos, cons
 
 case 2: {
     // do_incremental_search
-vector<pair<double,double>> remaining_path_vec;
-AStarBaseline(&replan_pair_vec, curPosi, goalPosi);
-while (curPosi != goalPosi)
-{
-    double obPos = findClosestObstacle(curPosi, obstacles, robRad);
-    if (this->near_dyn_obs)
+    vector<pair<double,double>> remaining_path_vec;
+    AStarBaseline(&replan_pair_vec, curPosi, goalPosi);
+    while (curPosi != goalPosi)
     {
-        // Generate circular barrier points
-        vector<pair<double,double>> barrierPoints = genCircleBarrier(obPos, robRad, curPosi);
-        // Find closest point on barrier path to goal position
-        pair<double, double> tempGoal = findClosestPointOnBarrier(goalPosi, barrierPoints);
-        // Generate path
-        vector<pair<double,double>> barrierPath = genBarrierPath(obPos, robRad, curPosi, tempGoal, barrierPoints);
-        // Interpolate through the path to generate a smooth trajectory
-        vector<pair<double,double>> smoothPath = interpolatePath(barrierPath);
-        // Update replan_pair_vec with new smooth path
-        replan_pair_vec.clear();
-        for (int i = 0; i < smoothPath.size() - 1; i++)
+        double obPos = findClosestObstacle(curPosi, obstacles, robRad);
+        if (this->near_dyn_obs && obPos < INFINITY)
         {
-            pair<double, double> p1 = smoothPath[i];
-            pair<double, double> p2 = smoothPath[i+1];
-            double cost = distance(p1, p2);
-            replan_pair_vec.push_back(make_pair(p1, p2, cost));
+            // Generate circular barrier points
+            vector<pair<double,double>> barrierPoints = genCircleBarrier(obPos, robRad, curPosi);
+            // Find closest point on barrier path to goal position
+            pair<double, double> tempGoal = findClosestPointOnBarrier(goalPosi, barrierPoints);
+            // Generate path
+            vector<pair<double,double>> barrierPath = genBarrierPath(obPos, robRad, curPosi, tempGoal, barrierPoints);
+            // Interpolate through the path to generate a smooth trajectory
+            vector<pair<double,double>> smoothPath = interpolatePath(barrierPath);
+            // Update replan_pair_vec with new smooth path
+            replan_pair_vec.clear();
+            for (int i = 0; i < smoothPath.size() - 1; i++)
+            {
+                pair<double, double> p1 = smoothPath[i];
+                pair<double, double> p2 = smoothPath[i+1];
+                double cost = distance(p1, p2);
+                replan_pair_vec.push_back(make_pair(p1, p2, cost));
+            }
+        }
+        // Traverse original path or barrier path
+        for (int i = 0; i < replan_pair_vec.size(); i++)
+        {
+            pair<double, double> p1 = replan_pair_vec[i].first;
+            pair<double, double> p2 = replan_pair_vec[i].second;
+            double cost = replan_pair_vec[i].cost;
+            // Check if robot is close enough to the goal position and break out of loop if true
+            if (distance(curPosi, goalPosi) < goal_tolerance)
+            {
+                break;
+            }
+            // Update current position to the end of the path
+            curPosi = p2;
+            // Append remaining path to remaining_path_vec
+            remaining_path_vec.push_back(make_pair(p1, p2, cost));
+            // Check if robot is near an obstacle and break out of loop if true
+            double newObPos = findClosestObstacle(curPosi, obstacles, robRad);
+            if (newObPos < INFINITY)
+            {
+                break;
+            }
         }
     }
-    // Update current position to the end of the path
-    curPosi = replan_pair_vec.back().second;
-    // Check if robot is close enough to the goal position and break out of loop if true
-    if (distance(curPosi, goalPosi) < goal_tolerance)
+    // Append remaining path to remaining_path_vec
+    for (int i = 0; i < replan_pair_vec.size(); i++)
     {
-        break;
+        pair<double, double> p1 = replan_pair_vec[i].first;
+        pair<double, double> p2 = replan_pair_vec[i].second;
+        double cost = replan_pair_vec[i].cost;
+        remaining_path_vec.push_back(make_pair(p1, p2, cost));
     }
 }
-// Append remaining path to remaining_path_vec
-for (int i = 0; i < replan_pair_vec.size(); i++)
-{
-    pair<double, double> p1 = replan_pair_vec[i].first;
-    pair<double, double> p2 = replan_pair_vec[i].second;
-    double cost = replan_pair_vec[i].cost;
-    remaining_path_vec.push_back(make_pair(p1, p2, cost));
-}
 
-
-}
 
 // Reduce the number of function calls
 // Prune the replan pair vector
