@@ -333,3 +333,25 @@ vector<pair<double,double>> genBarrierPath(const pair<double,double> obPos, cons
     
     return finalPath;
 }
+
+            case 2: {
+                // do_incremental_search
+                pair<double,double> curPosi = make_pair(this->odom_.pose.pose.position.x, this->odom_.pose.pose.position.y);
+                pair<double,double> goalPosi = make_pair(this->goal_.pose.position.x, this->goal_.pose.position.y);
+                // We want to find nearest obstacle
+                // insert function here
+                while (curPosi != goalPosi)
+                {
+                    AStarBaseline(&replan_pair_vec, curPosi, goalPosi);
+                    if (this->near_dyn_obs)
+                    {
+                        // Generate circular barrier points
+                        vector<pair<double,double>> barrierPoints = genCircleBarrier(obPos, robRad, robPos);
+                        // Generate temporary goal
+                        pair<double, double> tempGoal = findClosestPointOnBarrier(const pair<double, double>& goal, const vector<pair<double, double>>& barrierPoints) 
+                        // Generate path
+                        vector<pair<double,double>> barrierPath = genBarrierPath(obPos, robRad, robPos, tempGoal, barrierPoints)
+                        // Interpoolte through that path
+                    }
+                }
+            }
