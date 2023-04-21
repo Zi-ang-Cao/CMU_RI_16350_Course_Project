@@ -200,7 +200,8 @@ vector<pair<double,double>> modifyPathToAvoidBarrier(const vector<pair<double,do
     }
     return modifiedPath;
 }
-
+////////////////////////////////////////////////////////////////////////////////////////////////// ALL USED FUNCTIONS START HERE ///////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////// ANYTHING BEFORE THIS LINE IS NOT USED //////////////////////////////////////////////////////////////////////////////////////////////////////
 double distance(const pair<double,double>& p1, const pair<double,double>& p2) 
 {
     double dx = p1.first - p2.first;
@@ -308,6 +309,38 @@ double findClosestObstacle(const pair<double,double>& robPos, const vector<pair<
     return minDist;
 }
 
+vector<pair<double,double>> interpolatePath(const vector<pair<double,double>>& path) {
+    // Output path with at least two points
+    vector<pair<double,double>> output;
+    if (path.size() < 2) {
+        return output;
+    }
+
+    // Interpolate between adjacent points in the input path
+    for (int i = 0; i < path.size() - 1; i++) {
+        // Start and end points of the current segment
+        pair<double,double> p1 = path[i];
+        pair<double,double> p2 = path[i+1];
+        
+        // Calculate the distance and angle between the start and end points
+        double dist = distance(p1, p2);
+        double angle = atan2(p2.second - p1.second, p2.first - p1.first);
+        
+        // Interpolate between the start and end points using a step size of 0.1
+        for (double t = 0.0; t <= 1.0; t += 0.1) {
+            double x = p1.first + t * dist * cos(angle);
+            double y = p1.second + t * dist * sin(angle);
+            pair<double,double> point(x, y);
+            output.push_back(point);
+        }
+    }
+    
+    // Add the final point in the input path to the output path
+    output.push_back(path.back());
+    
+    return output;
+}
+
 
 vector<pair<double,double>> genBarrierPath(const pair<double,double> obPos, const double robRad, const pair<double,double> robPos, const pair<double,double> tempGoal, const vector<pair<double,double>> barrierPoints)
 {
@@ -346,24 +379,42 @@ vector<pair<double,double>> genBarrierPath(const pair<double,double> obPos, cons
     return finalPath;
 }
 
-            case 2: {
-                // do_incremental_search
-                pair<double,double> curPosi = make_pair(this->odom_.pose.pose.position.x, this->odom_.pose.pose.position.y);
-                pair<double,double> goalPosi = make_pair(this->goal_.pose.position.x, this->goal_.pose.position.y);
-                // We want to find nea  rest obstacle
-                double obPos = findClosestObstacle(curPosi, obstacles, robRad)
-                while (curPosi != goalPosi)
-                {
-                    AStarBaseline(&replan_pair_vec, curPosi, goalPosi);
-                    if (this->near_dyn_obs)
-                    {
-                        // Generate circular barrier points
-                        vector<pair<double,double>> barrierPoints = genCircleBarrier(obPos, curPosi, robPos);
-                        // Generate temporary goal
-                        pair<double, double> tempGoal = findClosestPointOnBarrier(goalPosi, barrierPoints) 
-                        // Generate path
-                        vector<pair<double,double>> barrierPath = genBarrierPath(obPos, robRad, curPosi, tempGoal, barrierPoints)
-                        // Interpoolte through that path
-                    }
-                }
+case 2: {
+    // do_incremental_search
+    pair<double,double> curPosi = make_pair(this->odom_.pose.pose.position.x, this->odom_.pose.pose.position.y);
+    pair<double,double> goalPosi = make_pair(this->goal_.pose.position.x, this->goal_.pose.position.y);
+    goal_tolerance = 0.25*robRad
+    // We want to find nearest obstacle
+    double obPos = findClosestObstacle(curPosi, obstacles, robRad);
+    while (curPosi != goalPosi)
+    {
+        AStarBaseline(&replan_pair_vec, curPosi, goalPosi);
+        if (this->near_dyn_obs)
+        {
+            // Generate circular barrier points
+            vector<pair<double,double>> barrierPoints = genCircleBarrier(obPos, robRad, curPosi);
+            // Find closest point on barrier path to goal position
+            pair<double, double> tempGoal = findClosestPointOnBarrier(goalPosi, barrierPoints);
+            // Generate path
+            vector<pair<double,double>> barrierPath = genBarrierPath(obPos, robRad, curPosi, tempGoal, barrierPoints);
+            // Interpolate through the path to generate a smooth trajectory
+            vector<pair<double,double>> smoothPath = interpolatePath(barrierPath);
+            // Update replan_pair_vec with new smooth path
+            replan_pair_vec.clear();
+            for (int i = 0; i < smoothPath.size() - 1; i++)
+            {
+                pair<double, double> p1 = smoothPath[i];
+                pair<double, double> p2 = smoothPath[i+1];
+                double cost = distance(p1, p2);
+                replan_pair_vec.push_back(make_pair(p1, p2, cost));
             }
+        }
+        // Update current position to the end of the path
+        curPosi = replan_pair_vec.back().second;
+        // Check if robot is close enough to the goal position and break out of loop if true
+        if (distance(curPosi, goalPosi) < goal_tolerance)
+        {
+            break;
+        }
+    }
+}
