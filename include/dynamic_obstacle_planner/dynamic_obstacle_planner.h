@@ -203,6 +203,150 @@ namespace dynamic_obstacle_planner{
 			path.header.stamp = ros::Time();
 			path.header.frame_id = "map";
 		}
+		// Functions for harvey.cpp
+		double distance(const pair<double,double>& p1, const pair<double,double>& p2) 
+		{
+			double dx = p1.first - p2.first;
+			double dy = p1.second - p2.second;
+			return sqrt(dx*dx + dy*dy);
+		}
+
+		// Define the function to find the closest safe point on the path
+
+		vector<pair<double,double>> genCircleBarrier(const pair<double,double> obPos, const double robRad, const pair<double,double> curPosi, const double obs_radius)
+		{
+			const int barRes = 50;
+			vector<pair<double,double>> barPoints;
+			// Determine the Orientation of the circle
+			double barOrient = 0;
+			// Generate points along the circle
+			for (int i = 0; i <= barRes; i++)
+			{
+				double angle = i * 2.0 * M_PI / barRes;
+				double x = obPos.first() + obs_radius * cos(angle + barOrient);
+				double y = obPos.second() + obs_radius * sin(angle + barOrient);
+				barPoints.push_back(make_pair(x,y));
+			}
+			return barPoints;
+		}
+
+		pair<double, double> findClosestSafePointOnPath(const vector<pair<double, double>>& path, const pair<double, double>& obstaclePos, const double& dist_near_dyn_obs, const double& offset_dyn_obs, const double& factor_of_safeZone, const pair<double, double>& goalPosi) {
+			double safeZone = factor_of_safeZone * offset_dyn_obs;
+
+			// Initialize variables for the closest safe point and its distance to the goal
+			pair<double, double> closestPoint;
+			double minDistToGoal = INFINITY;
+
+			// Initialize a vector to store all the safe points on the path
+			vector<pair<double, double>> safePoints;
+
+			for (int i = 0; i < path.size(); i++) {
+				pair<double, double> point = path[i];
+				double distToObstacle = distance(point, obstaclePos);
+
+				// Check if the point is within the safe zone
+				if (distToObstacle < safeZone) {
+					continue;
+				}
+
+				// Check if the point is closer to the obstacle than the nearest safe point found so far
+				if (distToObstacle > dist_near_dyn_obs) {
+					continue;
+				}
+
+				// Calculate the distance from the point to the goal
+				double distToGoal = distance(point, goalPosi);
+
+				// If the point is closer to the goal than the current closest safe point, update the closest safe point
+				if (distToGoal < minDistToGoal) {
+					closestPoint = point;
+					minDistToGoal = distToGoal;
+				}
+
+				// Add the safe point to the vector of safe points
+				safePoints.push_back(point);
+			}
+
+			// Sort the vector of safe points in increasing order of their distance to the goal
+			sort(safePoints.begin(), safePoints.end(), [&](const pair<double, double>& a, const pair<double, double>& b) {
+				double distToGoalA = distance(a, goalPosi);
+				double distToGoalB = distance(b, goalPosi);
+				return distToGoalA < distToGoalB;
+			});
+
+			// If there are any safe points, update the closest safe point to be the closest one to the goal
+			if (!safePoints.empty()) {
+				closestPoint = safePoints[0];
+			}
+
+			return closestPoint;
+		}
+
+		vector<pair<double,double>> genNonTraversableBarrier(const pair<double,double> obPos, const double robRad, const pair<double,double> curPosi, const pair<double,double> goalPos)
+		{
+			// Generate circular barrier points
+			vector<pair<double,double>> barrierPoints = genCircleBarrier(obPos, robRad, curPosi);
+			// Find closest point on original path with respect to obstacle that is "dist_near_dyn_obs" away
+			pair<double, double> tempGoal = findClosestPointOnPath(curPosi, path, dist_near_dyn_obs);
+			// Generate non-traversable barrier path
+			vector<pair<double,double>> barrierPath;
+			for (int i = 0; i < barrierPoints.size() - 1; i++)
+			{
+				pair<double, double> p1 = barrierPoints[i];
+				pair<double, double> p2 = barrierPoints[i+1];
+				double cost = distance(p1, p2);
+				barrierPath.push_back(make_pair(p1, p2, cost));
+			}
+			// Append line segment from start position to closest point on barrier path
+			barrierPath.insert(barrierPath.begin(), make_pair(curPosi, tempGoal, distance(curPosi, tempGoal)));
+			// Append line segment from closest point on barrier path to goal position
+			barrierPath.push_back(make_pair(tempGoal, goalPos, distance(tempGoal, goalPos)));
+			return barrierPath;
+		}
+
+		double findClosestObstacle(const pair<double,double>& robPos, const vector<pair<double,double>>& obstacles, const double robotRadius)
+		{
+			double minDist = numeric_limits<double>::max();
+			for (const auto& obstacle : obstacles) {
+				double dist = distance(point, obstacle) - robotRadius;
+				if (dist < minDist) {
+					minDist = dist;
+				}
+			}
+			return minDist;
+		}
+
+		vector<pair<double,double>> interpolatePath(const vector<pair<double,double>>& path) {
+			// Output path with at least two points
+			vector<pair<double,double>> output;
+			if (path.size() < 2) {
+				return output;
+			}
+
+			// Interpolate between adjacent points in the input path
+			for (int i = 0; i < path.size() - 1; i++) {
+				// Start and end points of the current segment
+				pair<double,double> p1 = path[i];
+				pair<double,double> p2 = path[i+1];
+				
+				// Calculate the distance and angle between the start and end points
+				double dist = distance(p1, p2);
+				double angle = atan2(p2.second - p1.second, p2.first - p1.first);
+				
+				// Interpolate between the start and end points using a step size of 0.1
+				for (double t = 0.0; t <= 1.0; t += 0.1) {
+					double x = p1.first + t * dist * cos(angle);
+					double y = p1.second + t * dist * sin(angle);
+					pair<double,double> point(x, y);
+					output.push_back(point);
+				}
+			}
+			
+			// Add the final point in the input path to the output path
+			output.push_back(path.back());
+			
+			return output;
+		}
 
 		// === Planner Control Bool ===
 		bool has_plan_to_execute = false;
