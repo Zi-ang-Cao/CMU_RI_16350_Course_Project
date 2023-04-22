@@ -168,6 +168,8 @@ namespace dynamic_obstacle_planner{
             {
             case 1: {
                 // Do Partial A* Replanning
+                pair<double,double> curPosi = make_pair(this->odom_.pose.pose.position.x, this->odom_.pose.pose.position.y);
+                pair<double,double> goalPosi = make_pair(this->goal_.pose.position.x, this->goal_.pose.position.y);
                 vector<pair<double,double>> remaining_path_vec;
                 AStarBaseline(&replan_pair_vec, curPosi, goalPosi);
                 this->near_dyn_obs = false;
