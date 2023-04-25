@@ -1,0 +1,23 @@
+{
+    "files.associations": {
+        "*.lua": "cpp",
+        "vector": "cpp",
+        "array": "cpp",
+        "string": "cpp",
+        "string_view": "cpp",
+        "ostream": "cpp",
+        "__hash_table": "cpp",
+        "__split_buffer": "cpp",
+        "__tree": "cpp",
+        "bitset": "cpp",
+        "initializer_list": "cpp",
+        "list": "cpp",
+        "map": "cpp",
+        "unordered_map": "cpp",
+        "random": "cpp",
+        "__node_handle": "cpp",
+        "iostream": "cpp",
+        "tuple": "cpp",
+        "type_traits": "cpp"
+    }
+}
