@@ -264,16 +264,22 @@ namespace dynamic_obstacle_planner{
                 if (residualPlan_vec_ptr->size()>1) {
                     if(this->pseudo_goal){
                         // Swtich to the saved plan!
-                        
 
-
-                        updatePathVisVec(*residualPlan_vec_ptr);                        
+                        // updatePathVisVec(*residualPlan_vec_ptr);                        
                         this->pathMsgConverter(*residualPlan_vec_ptr, this->path_msg_);
-                        cout<<"residual flag: "<< residualPlan_vec_ptr->size()<<endl;
+
+
+                        // this->pathVisMsg_.markers = this->pathVisVec_;
+                        // this->visPathPub_.publish(this->pathVisMsg_);
                         // this->has_plan_to_execute = true;
+                        
                         this->tempGoal_is_On = false;
-                        this->pseudo_loop = 0;
-                        this->PID_path_ref_index = 1;
+
+                        // USEFUL TRICK!!!
+                        int bias = MIN(rewirePlan_vec_ptr->size(), this->path_msg_.poses.size() -1);
+
+                        this->pseudo_loop = 0 + bias;
+                        this->PID_path_ref_index = 1 + bias;
                         // DO NOT RESET RESIDUALPLAN
 
                         this->pseudo_goal = false;
