@@ -16,7 +16,6 @@
 #include <visualization_msgs/MarkerArray.h>
 #include <nav_msgs/Path.h>
 #include <random>
-#include <ctime>
 using namespace std;
 
 // === Map ===
@@ -93,8 +92,6 @@ namespace dynamic_obstacle_planner{
 		bool sync_pseudoRob_flag = true;
 		bool pseudo_goal = false;
 		bool pseudo_click;
-
-		clock_t Robot_start;
 
 		// ==== visualize dynamic obstacle ====
 		visualization_msgs::Marker marker_;
@@ -308,6 +305,9 @@ namespace dynamic_obstacle_planner{
 		bool tempGoal_is_On = false;
 
 		void find_a_TempGoal();
+
+		double get_distance(pair<double, double> p1, pair<double, double> p2);
+		
 		
 
 

@@ -1,11 +1,11 @@
 # Set Max Velocity
-UGV_velocity: 0.5 #linear vel
-UGV_angular_velocity: 2 #turning vel
+Robot_velocity: 0.3 #linear vel
+Robot_angular_velocity: 0.4 #turning vel
 
 # PID Parameters
-Kp_angle: 2.5 #P gain for angle
+Kp_angle: 1.5 #P gain for angle
 Kp_distance: 2.5 #P gain for distance
 Ki_angle: 1 #I gain for angle
 Ki_distance: 1 #I gain for distance
-Kd_angle: 0 #D gain for angle
+Kd_angle: 1 #D gain for angle
 Kd_distance: 0 #D gain for distance
