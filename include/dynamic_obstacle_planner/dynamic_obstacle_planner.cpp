@@ -817,7 +817,21 @@ namespace dynamic_obstacle_planner{
         if (not this->receiveOdom_) return;
         // if (not this->has_plan_to_execute) return;
         if (this->replan_for_newGoal | this->near_dyn_obs) return;
-        
+
+        if (this->Debug) curPosi = make_pair(this->pseudo_rob_pos_x, this->pseudo_rob_pos_y);
+        else curPosi = make_pair(this->odom_.pose.pose.position.x, this->odom_.pose.pose.position.y);
+
+        this->obs_distance_to_Rob = get_distance(make_pair(obs_pos_x, obs_pos_y), curPosi);
+
+        if (this->obs_distance_to_Rob <= this->replan_range) {
+            double rob_2_goal = get_distance(curPosi, goalPosi);
+            double obs_2_goal = get_distance(make_pair(obs_pos_x, obs_pos_y), goalPosi);
+
+            if (rob_2_goal > obs_2_goal) {
+                this->near_dyn_obs = true;
+            }            
+        }
+
 
 		//cout<<"PID CB" <<endl;
         //double fixed_time=;
@@ -941,6 +955,10 @@ namespace dynamic_obstacle_planner{
 				this->cmdvelPub_.publish(Twist);
 				nav_msgs::Path emptyPath;
 				this->path_msg_ = emptyPath;
+
+                this->PID_path_ref_index = 1;
+                // this->has_plan_to_execute = false;
+                this->pseudo_goal = true;
 
                 // this->has_plan_to_execute = false;
 			}

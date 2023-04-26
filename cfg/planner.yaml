@@ -7,7 +7,7 @@ obs_marker_factor: 2.0
 
 
 # === Planner Control ===
-REPLAN_STRATEG_Indicator: 2   # [0, 1, 2, 3] ...
+REPLAN_STRATEG_Indicator: 1   # [0, 1, 2, 3] ...
 
 # === Rewiring ===
 Barrier_Resolution: 400
