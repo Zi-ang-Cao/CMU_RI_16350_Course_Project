@@ -56,13 +56,7 @@ namespace dynamic_obstacle_planner{
 			cout << "[dyn_obs_planner]: No obs_marker_factor param. Use default 1.5." << endl;
 		}else{
 			cout << "[dyn_obs_planner]: obs_marker_factor is set to: " << this->obs_marker_factor << endl;
-		}
-
-
-        
-
-
-
+        }
 
         // === Baseline Variables ===
         if (not this->nh_.getParam(this->ns_ + "/Debug", this->Debug)){
@@ -71,6 +65,13 @@ namespace dynamic_obstacle_planner{
 		}
 		else{
 			cout << "[dyn_obs_planner]: Debugger Mode is set to: " << this->Debug << endl;
+		}
+        if (not this->nh_.getParam(this->ns_ + "/pseudo_click", this->pseudo_click)){
+			this->pseudo_click = false;
+			cout << "[dyn_obs_planner]: No pseudo click param. Use default false." << endl;
+		}
+		else{
+			cout << "[dyn_obs_planner]: Pseudo Click is set to: " << this->pseudo_click << endl;
 		}
         if (not this->nh_.getParam(this->ns_ + "/DynObs_rate", this->DynObs_rate)){
 			this->DynObs_rate = 0.1;
@@ -264,11 +265,16 @@ namespace dynamic_obstacle_planner{
             // this->has_plan_to_execute = false ---> Already achieved the tempGoal via PID or pesudoRob
             if (this->tempGoal_is_On) {
                 if (residualPlan_vec_ptr->size()>1) {
-                    // Swtich to the saved plan!
-                    this->pathMsgConverter(*residualPlan_vec_ptr, this->path_msg_);
-                    cout<<"residual flag"<<endl;
-                    this->tempGoal_is_On = false;
-                    // DO NOT RESET RESIDUALPLAN
+                    if(this->pseudo_goal){
+                        // Swtich to the saved plan!
+                        this->pathMsgConverter(*residualPlan_vec_ptr, this->path_msg_);
+                        cout<<"residual flag"<<endl;
+                        this->has_plan_to_execute = true;
+                        this->tempGoal_is_On = false;
+                        this->pseudo_loop = 0;
+                        this->PID_path_ref_index = 1;
+                        // DO NOT RESET RESIDUALPLAN
+                    }
                 }
                 else printf("THERE MIGHT BE AN ISSUE OR NOT READY FOR INCREMENTAL SEARCH!!!");
                 
@@ -295,7 +301,8 @@ namespace dynamic_obstacle_planner{
             this->pathMsgConverter(*plan2Publish_vec_ptr, this->path_msg_);
             this->pathVisMsg_.markers = this->pathVisVec_;
             this->visPathPub_.publish(this->pathVisMsg_);
-            this->pseudo_loop = 0; 
+            this->pseudo_loop = 0;
+            this->PID_path_ref_index = 1; 
             this->replan_for_newGoal = false;     // Update flags
         }
         else if (this->near_dyn_obs) {
@@ -571,17 +578,10 @@ namespace dynamic_obstacle_planner{
         if (this->replan_for_newGoal | this->near_dyn_obs) return;
 
 
-
-        if (dyn_obs_isOn) {
-            // Update flags "near_dyn_obs"
-            if (this->Debug) this->obs_distance_to_Rob = sqrt(pow(this->obs_pos_x - this->pseudo_rob_pos_x, 2) + pow(this->obs_pos_y - this->pseudo_rob_pos_y, 2));
-            else this->obs_distance_to_Rob = sqrt(pow(this->obs_pos_x - this->odom_.pose.pose.position.x, 2) + pow(this->obs_pos_y - this->odom_.pose.pose.position.y, 2));
-            // printf("obs_distance_to_Rob=%g, obs_distance_to_Rob - replan_range=%g\n", obs_distance_to_Rob, obs_distance_to_Rob-replan_range);
-            
-            if (this->obs_distance_to_Rob <= this->replan_range) {
-                printf("== do_rewiring is ON!!! == (with replan_range=%g)", replan_range);
-                this->near_dyn_obs = true;
-            }
+        this->obs_distance_to_Rob = sqrt(pow(this->obs_pos_x - this->pseudo_rob_pos_x, 2) + pow(this->obs_pos_y - this->pseudo_rob_pos_y, 2));
+        if (this->obs_distance_to_Rob <= this->replan_range) {
+            printf("== do_rewiring is ON!!! == (with replan_range=%g)", replan_range);
+            this->near_dyn_obs = true;
         }
 
         // Update pseudo_rob_ positoin and loop_indicator.
@@ -602,7 +602,6 @@ namespace dynamic_obstacle_planner{
             this->pseudo_rob_pos_y = path_msg_.poses[this->pseudo_loop].pose.position.y;
             // Increment the pseudo_loop by 1
             this->pseudo_loop++;
-
             // Change the position of pseudoRobMarker_ to follow the pseudo_rob_
             this->pseudoRobMarker_.pose.position.x = this->pseudo_rob_pos_x;
             this->pseudoRobMarker_.pose.position.y = this->pseudo_rob_pos_y;
@@ -610,13 +609,13 @@ namespace dynamic_obstacle_planner{
         }
 
         // Termination check for pseudo_rob_
+
         if (this->path_msg_.poses.size() ==  this->pseudo_loop){
             nav_msgs::Path emptyPath;
 			this->path_msg_ = emptyPath;
             this->pseudo_loop = 0;
-
             this->has_plan_to_execute = false;
-
+            this->pseudo_goal = true;
         }
         this->PseudoRobotPub_.publish(this->pseudoRobMarker_);
     }
@@ -640,16 +639,16 @@ namespace dynamic_obstacle_planner{
             //this->obs_pos_x = (this->obs_pos_x)+this->move[randomInt(0,2)];
             //this->obs_pos_y = (this->obs_pos_y)+this->move[randomInt(0,2)];
             if (this->obs_pos_y > 5.0){
-                this->move_direction = false;
-            }
-            if (this->obs_pos_y < 0.5){
                 this->move_direction = true;
             }
+            if (this->obs_pos_y < 0.5){
+                this->move_direction = false;
+            }
             if(this->move_direction){
-                this->obs_pos_y = (this->obs_pos_y)+0.1;
+                this->obs_pos_y = (this->obs_pos_y)-0.1;
             }
             if(!this->move_direction){
-                this->obs_pos_y = (this->obs_pos_y)-0.1;
+                this->obs_pos_y = (this->obs_pos_y)+0.1;
             }
         }
         else {
@@ -699,7 +698,12 @@ namespace dynamic_obstacle_planner{
         this->marker_.pose.position.z = 0.5;
         this->ObsPub_.publish(this->marker_);
 
-        
+        if(this->obs_pos_y > 2.9 && this->pseudo_click){
+            this->goal_.pose.position.x = -1;
+            this->goal_.pose.position.y  = 4;
+            this->goal_.pose.position.z  = 0.2; // set height to be 0.3 m
+            this->receiveClickedPoint_ = true;
+        }
 
         // // Update NodeTable
         // for (double x= (this->obs_pos_x - this->offset_dyn_obs); x<(this->obs_pos_x + this->offset_dyn_obs); x+=STEP_SIZE) {
@@ -709,8 +713,6 @@ namespace dynamic_obstacle_planner{
         //     }
         // }
         
-        // Turn on the flag.
-        this->dyn_obs_isOn = true;
 
     }
     void dyn_obs_planner::mapCallback(const nav_msgs::OccupancyGrid::ConstPtr& msg){
@@ -802,7 +804,11 @@ namespace dynamic_obstacle_planner{
 
         printf("path_msg_.poses.size() = %d, with PID_path_ref_index=%d, cmd=%d\n", endIdx, PID_path_ref_index, cmd);
 
-
+        this->obs_distance_to_Rob = sqrt(pow(this->obs_pos_x - this->odom_.pose.pose.position.x, 2) + pow(this->obs_pos_y - this->odom_.pose.pose.position.y, 2));
+        if (this->obs_distance_to_Rob <= this->replan_range) {
+            printf("== do_rewiring is ON!!! == (with replan_range=%g)", replan_range);
+            this->near_dyn_obs = true;
+        }
 		if (this->path_msg_.poses.size() != 0){
 		// if (endIdx != 0) {
 			// cmd 1 = angular turning, 2 = linear forward

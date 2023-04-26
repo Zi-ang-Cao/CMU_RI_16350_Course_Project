@@ -1,7 +1,7 @@
 
 # === Incremental Search ===
 # factor_of_safeZone: 2.0  # replan_range = factor_of_safeZone * offset_dyn_obs
-factor_of_safeZone: 1.6  # replan_range = factor_of_safeZone * offset_dyn_obs
+factor_of_safeZone: 1.8  # replan_range = factor_of_safeZone * offset_dyn_obs
 
 obs_marker_factor: 2.0
 
@@ -11,7 +11,7 @@ REPLAN_STRATEG_Indicator: 2   # [0, 1, 2, 3] ...
 
 # === Rewiring ===
 Barrier_Resolution: 400
-Barrier_Radius_Factor: 1.2
+Barrier_Radius_Factor: 1.4
 # Barrier_Radius_Factor: 1.15
 
 
@@ -22,10 +22,11 @@ obs_initial_y: 3.0     # Initial Y Pos of Dyn Obs
 obs_movable_range: 3.0 # Dyn Obs Movement Range
 
 # Refresh Rate
-DynObs_rate: 0.6       # Dynamic Obstacle Publish Rate
+DynObs_rate: 0.8       # Dynamic Obstacle Publish Rate
 # DynObs_rate: 0.5       # Dynamic Obstacle Publish Rate
 PseudoRob_rate: 0.05   # Pseudo Robot Publish Rate
 # PseudoRob_rate: 0.1    # Pseudo Robot Publish Rate
 
 # Debugger Mode
 Debug: True  # disables PID and enables pseudo robot
+pseudo_click: False  # Sends a fake click to the same position

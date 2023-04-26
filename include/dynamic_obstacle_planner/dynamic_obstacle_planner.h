@@ -90,6 +90,8 @@ namespace dynamic_obstacle_planner{
 		double pseudo_rob_pos_x;
 		double pseudo_rob_pos_y;
 		bool sync_pseudoRob_flag = true;
+		bool pseudo_goal = false;
+		bool pseudo_click;
 
 		// ==== visualize dynamic obstacle ====
 		visualization_msgs::Marker marker_;
@@ -130,8 +132,6 @@ namespace dynamic_obstacle_planner{
 		std::vector<visualization_msgs::Marker> ReplanpathVisVec_;
 		visualization_msgs::MarkerArray pathVisMsg_;
 		visualization_msgs::MarkerArray pathReplanVisMsg_;
-
-		bool gen_map_flag = true;
 
 		double desiredVel_;
 		double desired_angVel_;
@@ -237,6 +237,9 @@ namespace dynamic_obstacle_planner{
 					lineVec.push_back(p1);
 					lineVec.push_back(p2);
 				}
+			}
+			for (size_t i=0; i < plan.size(); i = i+8){
+				auto currentPoint = plan[i];
 				// waypoint
 				waypoint.header.frame_id = "map";
 				waypoint.id = 1+i;
@@ -255,7 +258,6 @@ namespace dynamic_obstacle_planner{
 			}
 			line.header.frame_id = "map";
 			line.points = lineVec;
-			line.ns = "rrt_path";
 			line.id = 0;
 			line.type = visualization_msgs::Marker::LINE_LIST;
 			line.scale.x = 0.05;
