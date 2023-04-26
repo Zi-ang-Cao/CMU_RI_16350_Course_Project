@@ -234,7 +234,6 @@ namespace dynamic_obstacle_planner{
         }
 
         // ==== Reset Flags ====
-		//this->offset_static_obs = rob_radius;
         this->offset_dyn_obs = obs_radius+rob_radius;
         this->replan_range = factor_of_safeZone * offset_dyn_obs;
         this->Barrier_Radius = Barrier_Radius_Factor * offset_dyn_obs;
@@ -249,31 +248,35 @@ namespace dynamic_obstacle_planner{
             rewirePlan_vec_ptr = new vector<pair<double,double>>();
 
             this->near_dyn_obs = false;
-            this->GoalIdx++;
             this->tempGoal_is_On = false;
-        }
+            this->pseudo_goal = false;
 
-        // Update Flag for "this->near_dyn_obs"
-        if (this->has_plan_to_execute) {
-            // Only consider to replan -- when there is an active plan
-            if (this->near_dyn_obs) {
-                // generate_newPath2Publish=true;
-                this->near_dyn_obs=true;
-            }
         }
-        else {
-            // this->has_plan_to_execute = false ---> Already achieved the tempGoal via PID or pesudoRob
+        
+        // Check whether I should swap to "residualPlan_vec_ptr"
+
+        if (this->path_msg_.poses.size() == 0){
+        // if (not this->has_plan_to_execute) {
+
+
+            // Means: Already achieved the tempGoal via PID or pesudoRob
             if (this->tempGoal_is_On) {
                 if (residualPlan_vec_ptr->size()>1) {
                     if(this->pseudo_goal){
                         // Swtich to the saved plan!
+                        
+
+
+                        updatePathVisVec(*residualPlan_vec_ptr);                        
                         this->pathMsgConverter(*residualPlan_vec_ptr, this->path_msg_);
-                        cout<<"residual flag"<<endl;
-                        this->has_plan_to_execute = true;
+                        cout<<"residual flag: "<< residualPlan_vec_ptr->size()<<endl;
+                        // this->has_plan_to_execute = true;
                         this->tempGoal_is_On = false;
                         this->pseudo_loop = 0;
                         this->PID_path_ref_index = 1;
                         // DO NOT RESET RESIDUALPLAN
+
+                        this->pseudo_goal = false;
                     }
                 }
                 else printf("THERE MIGHT BE AN ISSUE OR NOT READY FOR INCREMENTAL SEARCH!!!");
@@ -283,7 +286,7 @@ namespace dynamic_obstacle_planner{
             }
         }
 
-        if (this->replan_for_newGoal | this->near_dyn_obs) printf("Good TO Continue");
+        if (this->replan_for_newGoal | this->near_dyn_obs) printf("Good TO Continue\n");
         else return;
 
         // Prepare "curPosi", "goalPosi"
@@ -293,10 +296,8 @@ namespace dynamic_obstacle_planner{
 
 
         if (this->replan_for_newGoal) {
-            cout<<"Received a new goal AND generating path via A*"<<endl;            
             AStarBaseline(plan2Publish_vec_ptr, curPosi, goalPosi);
-            this->has_plan_to_execute = true;
-            cout << "Ready to Publish Path via AStarBaseline" << endl;
+            // this->has_plan_to_execute = true;
             updatePathVisVec(*plan2Publish_vec_ptr);
             this->pathMsgConverter(*plan2Publish_vec_ptr, this->path_msg_);
             this->pathVisMsg_.markers = this->pathVisVec_;
@@ -321,15 +322,16 @@ namespace dynamic_obstacle_planner{
 
                     tempGoalPosi = goalPosi;
                     AStarBaseline(rewirePlan_vec_ptr, curPosi, tempGoalPosi);
-                    this->has_plan_to_execute = true;
+                    UN_Lable_avoidZone();
+
+                    printf("Publish Rewire Path!\n");
+                    // this->has_plan_to_execute = true;
                     updateReplanPathVisVec(*rewirePlan_vec_ptr);
                     this->pathMsgConverter(*rewirePlan_vec_ptr, this->path_msg_);
                     this->pathReplanVisMsg_.markers = this->ReplanpathVisVec_;
                     this->visReplanPathPub_.publish(this->pathReplanVisMsg_);
                     this->pseudo_loop = 0;
                     this->PID_path_ref_index = 1;
-                    cout << "Published Path via ASTAR_Total_Replan" << endl;
-                    UN_Lable_avoidZone();
                     break;
                 }
                 case do_ASTAR_Partial_Replan: {
@@ -339,15 +341,17 @@ namespace dynamic_obstacle_planner{
                     residualPlan_vec_ptr->clear();
                     find_a_TempGoal();  // Assigned tempGoalPosi inside of the function!!!
                     AStarBaseline(rewirePlan_vec_ptr, curPosi, tempGoalPosi);
-                    this->has_plan_to_execute = true;
+                    UN_Lable_avoidZone();
+
+                    printf("Publish Rewire Path!\n");
+                    // this->has_plan_to_execute = true;
                     updateReplanPathVisVec(*rewirePlan_vec_ptr);
                     this->pathMsgConverter(*rewirePlan_vec_ptr, this->path_msg_);
                     this->pathReplanVisMsg_.markers = this->ReplanpathVisVec_;
                     this->visReplanPathPub_.publish(this->pathReplanVisMsg_);
                     this->pseudo_loop = 0;
                     this->PID_path_ref_index = 1;
-                    cout << "Published Path via ASTAR_Partial_Replan" << endl;
-                    UN_Lable_avoidZone();
+
                     break;
                 }
                 case do_Incremental_Search: {
@@ -362,26 +366,11 @@ namespace dynamic_obstacle_planner{
 
             // === Reset Flag ===
             this->near_dyn_obs = false;
-            //printf("==== near_dyn_obs is OFF by Rewiring ====\n");
-        }
-
-        // Check for Invalid path!
-        if (plan2Publish_vec_ptr->size() == 0) {
-            cout << "There is no Valid Path being found! Wait for next valid goal to update plan!" << endl;
+            printf("==== near_dyn_obs is OFF by Rewiring ====\n");
         }
         
         this->receiveClickedPoint_ = false;     // Reset Flag
     }
-
-    // ```C++
-    // vector<pair<double,double>>* plan2Publish_vec_ptr = new vector<pair<double,double>>();
-    // pair<double,double> tempGoalPosi;
-    // ```
-    // Given the above code, I want to do following stuff:
-    // 1. find the last pair that the (pair.first+pair.second<1), in the "plan2Publish_vec_ptr";
-    // 2. assign this pair to variable "tempGoalPosi" 
-    // 3. Generate a new vector to store all item from "tempGoalPosi" to the end of "plan2Publish_vec_ptr";
-
 
     void dyn_obs_planner::find_a_TempGoal() {
         // plan2Publish_vec_ptr
@@ -402,7 +391,12 @@ namespace dynamic_obstacle_planner{
         // If a valid last index was found, assign the value to tempGoalPosi
         if (last_index >= 0) {
             interested_IDX = MIN(last_index+5, (plan2Publish_vec_ptr->size() - 1));
-            tempGoalPosi = (*plan2Publish_vec_ptr)[interested_IDX];
+
+            bufferPair = (*plan2Publish_vec_ptr)[interested_IDX];
+            if (get_distance(bufferPair, goalPosi) < get_distance(tempGoalPosi, goalPosi)) {
+                tempGoalPosi = bufferPair;
+            }
+            
         } else {
             printf("No Valid tempGoalPosi being found!! Use Ultimate Goal Directly\n");
             tempGoalPosi = goalPosi;
@@ -419,8 +413,6 @@ namespace dynamic_obstacle_planner{
     }
 
     void dyn_obs_planner::Lable_avoidZone() {
-        printf("[Currently ONLY HANDLE ONE DYN_OBS] Lable avoidZone before calling AStarBaseline()\n");
-
         // Determine the Orientation -- useful for semiCircle
         Barrier_Orientation = 0;    // No matter for a circle
 
@@ -430,25 +422,37 @@ namespace dynamic_obstacle_planner{
 
         // Generate points along the circle
         double temp_x, temp_y;
+        double dist_1, dist_2;
+
+        if (this->Debug) curPosi = make_pair(this->pseudo_rob_pos_x, this->pseudo_rob_pos_y);
+        else curPosi = make_pair(this->odom_.pose.pose.position.x, this->odom_.pose.pose.position.y);
+
+        dist_2 = get_distance(make_pair(obs_pos_x, obs_pos_y), tempGoalPosi);
+
         for (double r=0; r<=Barrier_Radius; r=r+0.01) {
             for (int i = 0; i<=Barrier_Resolution; i++) {
                 Barrier_Angle = i * 2.0 * M_PI / Barrier_Resolution;
                 temp_x = obs_pos_x + r * cos(Barrier_Angle + Barrier_Orientation);
                 temp_y = obs_pos_y + r * sin(Barrier_Angle + Barrier_Orientation);
 
-                this->Barrier_pair_vec.push_back(make_pair(temp_x, temp_y));
-                this->Barrier_pair_vec.push_back(make_pair(temp_x+STEP_SIZE, temp_y+STEP_SIZE));
-                this->Barrier_pair_vec.push_back(make_pair(temp_x-STEP_SIZE, temp_y-STEP_SIZE));
-                this->Barrier_pair_vec.push_back(make_pair(temp_x-STEP_SIZE, temp_y+STEP_SIZE));
-                this->Barrier_pair_vec.push_back(make_pair(temp_x+STEP_SIZE, temp_y-STEP_SIZE));
+                dist_1 = get_distance(make_pair(temp_x, temp_y), tempGoalPosi);
+
+                if (dist_2 < dist_1) {
+                    this->Barrier_pair_vec.push_back(make_pair(temp_x, temp_y));
+                }
+
+                // this->Barrier_pair_vec.push_back(make_pair(temp_x+STEP_SIZE, temp_y+STEP_SIZE));
+                // this->Barrier_pair_vec.push_back(make_pair(temp_x-STEP_SIZE, temp_y-STEP_SIZE));
+                // this->Barrier_pair_vec.push_back(make_pair(temp_x-STEP_SIZE, temp_y+STEP_SIZE));
+                // this->Barrier_pair_vec.push_back(make_pair(temp_x+STEP_SIZE, temp_y-STEP_SIZE));
             }
         }
 
-        for (double x= (this->obs_pos_x - 0.5); x<(this->obs_pos_x + 0.5); x=x+0.01) {
-            for (double y= (this->obs_pos_y - 0.5); y<(this->obs_pos_y + 0.5); y=y+0.01) {
-                this->Barrier_pair_vec.push_back(make_pair(x, y));
-            }
-        }
+        // for (double x= (this->obs_pos_x - 0.5); x<(this->obs_pos_x + 0.5); x=x+0.01) {
+        //     for (double y= (this->obs_pos_y - 0.5); y<(this->obs_pos_y + 0.5); y=y+0.01) {
+        //         this->Barrier_pair_vec.push_back(make_pair(x, y));
+        //     }
+        // }
         
 
         // Label all
@@ -457,8 +461,13 @@ namespace dynamic_obstacle_planner{
         }
 
     }
+
+    double dyn_obs_planner::get_distance(pair<double, double> p1, pair<double, double> p2) {
+        return sqrt(pow(p1.first - p2.first, 2) + pow(p1.second - p2.second, 2));
+    }
+
+
     void dyn_obs_planner::UN_Lable_avoidZone() {
-        printf("REMOVE Labled avoidZone for previous rewiring!!!\n");
         // UN Label all
         for (auto p: this->Barrier_pair_vec) {
             NodeTable[GETMAPINDEX(p.first, p.second,this->x_size)].is_Barrier_Obs = false;
@@ -574,14 +583,21 @@ namespace dynamic_obstacle_planner{
     void dyn_obs_planner::pseudoRobCB(const ros::TimerEvent&){
         // Only Enter the Planner After Reviceving an Odom update
         if (not this->receiveOdom_) return;
-        if (not this->has_plan_to_execute) return;
+        // if (not this->has_plan_to_execute) return;
         if (this->replan_for_newGoal | this->near_dyn_obs) return;
 
+        if (this->Debug) curPosi = make_pair(this->pseudo_rob_pos_x, this->pseudo_rob_pos_y);
+        else curPosi = make_pair(this->odom_.pose.pose.position.x, this->odom_.pose.pose.position.y);
 
-        this->obs_distance_to_Rob = sqrt(pow(this->obs_pos_x - this->pseudo_rob_pos_x, 2) + pow(this->obs_pos_y - this->pseudo_rob_pos_y, 2));
+        this->obs_distance_to_Rob = get_distance(make_pair(obs_pos_x, obs_pos_y), curPosi);
+
         if (this->obs_distance_to_Rob <= this->replan_range) {
-            printf("== do_rewiring is ON!!! == (with replan_range=%g)", replan_range);
-            this->near_dyn_obs = true;
+            double rob_2_goal = get_distance(curPosi, goalPosi);
+            double obs_2_goal = get_distance(make_pair(obs_pos_x, obs_pos_y), goalPosi);
+
+            if (rob_2_goal > obs_2_goal) {
+                this->near_dyn_obs = true;
+            }            
         }
 
         // Update pseudo_rob_ positoin and loop_indicator.
@@ -614,7 +630,7 @@ namespace dynamic_obstacle_planner{
             nav_msgs::Path emptyPath;
 			this->path_msg_ = emptyPath;
             this->pseudo_loop = 0;
-            this->has_plan_to_execute = false;
+            // this->has_plan_to_execute = false;
             this->pseudo_goal = true;
         }
         this->PseudoRobotPub_.publish(this->pseudoRobMarker_);
@@ -793,7 +809,7 @@ namespace dynamic_obstacle_planner{
     void dyn_obs_planner::PID(const ros::TimerEvent&){
         // Only Enter the Planner After Reviceving an Odom update
         if (not this->receiveOdom_) return;
-        if (not this->has_plan_to_execute) return;
+        // if (not this->has_plan_to_execute) return;
         if (this->replan_for_newGoal | this->near_dyn_obs) return;
         
 
@@ -806,7 +822,6 @@ namespace dynamic_obstacle_planner{
 
         this->obs_distance_to_Rob = sqrt(pow(this->obs_pos_x - this->odom_.pose.pose.position.x, 2) + pow(this->obs_pos_y - this->odom_.pose.pose.position.y, 2));
         if (this->obs_distance_to_Rob <= this->replan_range) {
-            printf("== do_rewiring is ON!!! == (with replan_range=%g)", replan_range);
             this->near_dyn_obs = true;
         }
 		if (this->path_msg_.poses.size() != 0){
@@ -921,7 +936,7 @@ namespace dynamic_obstacle_planner{
 				nav_msgs::Path emptyPath;
 				this->path_msg_ = emptyPath;
 
-                this->has_plan_to_execute = false;
+                // this->has_plan_to_execute = false;
 			}
 
 		}

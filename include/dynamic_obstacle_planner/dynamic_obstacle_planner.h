@@ -305,6 +305,9 @@ namespace dynamic_obstacle_planner{
 		bool tempGoal_is_On = false;
 
 		void find_a_TempGoal();
+
+		double get_distance(pair<double, double> p1, pair<double, double> p2);
+		
 		
 
 

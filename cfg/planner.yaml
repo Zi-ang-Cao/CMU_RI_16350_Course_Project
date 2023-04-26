@@ -11,7 +11,9 @@ REPLAN_STRATEG_Indicator: 2   # [0, 1, 2, 3] ...
 
 # === Rewiring ===
 Barrier_Resolution: 400
-Barrier_Radius_Factor: 1.4
+Barrier_Radius_Factor: 1.0
+# Barrier_Radius_Factor: 1.4  # Good Number!
+
 # Barrier_Radius_Factor: 1.15
 
 

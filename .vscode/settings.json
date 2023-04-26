@@ -18,6 +18,7 @@
         "__node_handle": "cpp",
         "iostream": "cpp",
         "tuple": "cpp",
-        "type_traits": "cpp"
+        "type_traits": "cpp",
+        "cmath": "cpp"
     }
 }
