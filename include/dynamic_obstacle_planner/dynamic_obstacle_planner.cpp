@@ -8,6 +8,7 @@
 #include <stdlib.h>
 #include <iostream>
 #include <vector>
+#include <ctime>
 
 using namespace std;
 
@@ -232,7 +233,6 @@ namespace dynamic_obstacle_planner{
             this->pseudo_rob_pos_y = this->odom_.pose.pose.position.y;
             this->sync_pseudoRob_flag = false;
         }
-
         // ==== Reset Flags ====
 		//this->offset_static_obs = rob_radius;
         this->offset_dyn_obs = obs_radius+rob_radius;
@@ -241,6 +241,7 @@ namespace dynamic_obstacle_planner{
 
         // Update Flag for "this->replan_for_newGoal"
         if (this->receiveClickedPoint_) {
+            this->Robot_start = clock();
             this->replan_for_newGoal=true;
             // generate_newPath2Publish=true;
             refresh_NodeTable();        // reset h, g and f in NodeTable
@@ -294,7 +295,9 @@ namespace dynamic_obstacle_planner{
 
         if (this->replan_for_newGoal) {
             cout<<"Received a new goal AND generating path via A*"<<endl;            
+            clock_t start = clock();
             AStarBaseline(plan2Publish_vec_ptr, curPosi, goalPosi);
+            cout<<"Initial Plan Length: "<< (*plan2Publish_vec_ptr).size()<<endl;
             this->has_plan_to_execute = true;
             cout << "Ready to Publish Path via AStarBaseline" << endl;
             updatePathVisVec(*plan2Publish_vec_ptr);
@@ -304,6 +307,8 @@ namespace dynamic_obstacle_planner{
             this->pseudo_loop = 0;
             this->PID_path_ref_index = 1; 
             this->replan_for_newGoal = false;     // Update flags
+            clock_t stop_time = clock()- start;
+            cout<< "Initial Comp Time: "<<(float)stop_time/CLOCKS_PER_SEC <<" sec"<< endl;
         }
         else if (this->near_dyn_obs) {
 
@@ -317,10 +322,11 @@ namespace dynamic_obstacle_planner{
             {
                 case do_ASTAR_Total_Replan: {
                     // ONLY setup a knowledged Barrier, then back to baseline AStar!
+                    clock_t start = clock();
                     Lable_avoidZone();
-
                     tempGoalPosi = goalPosi;
                     AStarBaseline(rewirePlan_vec_ptr, curPosi, tempGoalPosi);
+                    cout<<"RePlan Length: "<< (*rewirePlan_vec_ptr).size()<<endl;
                     this->has_plan_to_execute = true;
                     updateReplanPathVisVec(*rewirePlan_vec_ptr);
                     this->pathMsgConverter(*rewirePlan_vec_ptr, this->path_msg_);
@@ -328,6 +334,8 @@ namespace dynamic_obstacle_planner{
                     this->visReplanPathPub_.publish(this->pathReplanVisMsg_);
                     this->pseudo_loop = 0;
                     this->PID_path_ref_index = 1;
+                    clock_t stop_time = clock()- start;
+                    cout<< "Comp Time: "<<(float)stop_time/CLOCKS_PER_SEC <<" sec"<< endl;                    
                     cout << "Published Path via ASTAR_Total_Replan" << endl;
                     UN_Lable_avoidZone();
                     break;
@@ -335,10 +343,12 @@ namespace dynamic_obstacle_planner{
                 case do_ASTAR_Partial_Replan: {
                     this->tempGoal_is_On = true;
                     // ONLY setup a knowledged Barrier, then back to baseline AStar!
+                    clock_t start = clock();
                     Lable_avoidZone();
                     residualPlan_vec_ptr->clear();
                     find_a_TempGoal();  // Assigned tempGoalPosi inside of the function!!!
                     AStarBaseline(rewirePlan_vec_ptr, curPosi, tempGoalPosi);
+                    cout<<"RePlan Length: "<< (*rewirePlan_vec_ptr).size()<<endl;
                     this->has_plan_to_execute = true;
                     updateReplanPathVisVec(*rewirePlan_vec_ptr);
                     this->pathMsgConverter(*rewirePlan_vec_ptr, this->path_msg_);
@@ -346,6 +356,8 @@ namespace dynamic_obstacle_planner{
                     this->visReplanPathPub_.publish(this->pathReplanVisMsg_);
                     this->pseudo_loop = 0;
                     this->PID_path_ref_index = 1;
+                    clock_t stop_time = clock()- start;
+                    cout<< "Comp Time: "<<(float)stop_time/CLOCKS_PER_SEC <<" sec"<< endl;
                     cout << "Published Path via ASTAR_Partial_Replan" << endl;
                     UN_Lable_avoidZone();
                     break;
@@ -602,6 +614,7 @@ namespace dynamic_obstacle_planner{
             this->pseudo_rob_pos_y = path_msg_.poses[this->pseudo_loop].pose.position.y;
             // Increment the pseudo_loop by 1
             this->pseudo_loop++;
+
             // Change the position of pseudoRobMarker_ to follow the pseudo_rob_
             this->pseudoRobMarker_.pose.position.x = this->pseudo_rob_pos_x;
             this->pseudoRobMarker_.pose.position.y = this->pseudo_rob_pos_y;
@@ -616,6 +629,8 @@ namespace dynamic_obstacle_planner{
             this->pseudo_loop = 0;
             this->has_plan_to_execute = false;
             this->pseudo_goal = true;
+            clock_t stop_time = clock()- this->Robot_start;
+            cout<< "Path Completion Time: "<<(float)stop_time/CLOCKS_PER_SEC <<" sec"<< endl; 
         }
         this->PseudoRobotPub_.publish(this->pseudoRobMarker_);
     }
