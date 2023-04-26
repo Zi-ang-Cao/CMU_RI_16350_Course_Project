@@ -838,7 +838,7 @@ namespace dynamic_obstacle_planner{
 		int endIdx=path_msg_.poses.size();
         //cout<<endIdx<<endl;
 
-        printf("path_msg_.poses.size() = %d, with PID_path_ref_index=%d, cmd=%d\n", endIdx, PID_path_ref_index, cmd);
+        //printf("path_msg_.poses.size() = %d, with PID_path_ref_index=%d, cmd=%d\n", endIdx, PID_path_ref_index, cmd);
 
         this->obs_distance_to_Rob = sqrt(pow(this->obs_pos_x - this->odom_.pose.pose.position.x, 2) + pow(this->obs_pos_y - this->odom_.pose.pose.position.y, 2));
         if (this->obs_distance_to_Rob <= this->replan_range) {
@@ -904,7 +904,7 @@ namespace dynamic_obstacle_planner{
 			double output_angle_vel = (this->Kp_a_*error_angle) + (this->Kd_a_*current_vel_ang);
 			double output_linear_vel = (this->Kp_d_*error_dis) + (this->Kd_d_*current_vel_x);
 
-			cout<< "output_angle_vel = " << output_angle_vel << endl;
+			//cout<< "output_angle_vel = " << output_angle_vel << endl;
 
 			
 			//set max and min speed

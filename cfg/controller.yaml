@@ -7,5 +7,5 @@ Kp_angle: 1.5 #P gain for angle
 Kp_distance: 2.5 #P gain for distance
 Ki_angle: 1 #I gain for angle
 Ki_distance: 1 #I gain for distance
-Kd_angle: 1 #D gain for angle
+Kd_angle: 0.7 #D gain for angle
 Kd_distance: 0 #D gain for distance
