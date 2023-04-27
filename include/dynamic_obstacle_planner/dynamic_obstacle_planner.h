@@ -121,12 +121,14 @@ namespace dynamic_obstacle_planner{
 
 
 		// ==== 2nd Dynamic Obstacle ====
+		double DynObs_rate_2;
 		ros::Timer visDynObsTimer_2_;
 		ros::Publisher ObsPub_2_;
 		void dynObsCB_2(const ros::TimerEvent&);
 		visualization_msgs::Marker marker_2_;
 		uint32_t shape_2 = visualization_msgs::Marker::CUBE;
 
+		bool near_dyn_obs_2 = false;
 
 		pair<double, double> obs_posi_2;
 
@@ -137,6 +139,9 @@ namespace dynamic_obstacle_planner{
 
 		double obs_pos_x_2;
 		double obs_pos_y_2;
+
+		// ==== find Temp Goal ====
+		int Jump_idx = 5;
 
 
 

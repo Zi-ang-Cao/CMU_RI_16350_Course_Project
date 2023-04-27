@@ -37,7 +37,20 @@ namespace dynamic_obstacle_planner{
 			cout << "[dyn_obs_planner]: obs_initial_y_2 is set to: " << this->obs_initial_y_2 << endl;
 		}
 
+        if (not this->nh_.getParam(this->ns_ + "/DynObs_rate_2", this->DynObs_rate_2)){
+			this->DynObs_rate_2 = 3.0;
+			cout << "[dyn_obs_planner]: DynObs_rate_2. Use default 3." << endl;
+		}else{
+			cout << "[dyn_obs_planner]: DynObs_rate_2 is set to: " << this->DynObs_rate_2 << endl;
+		}
+
         // === Additional Variables ===
+        if (not this->nh_.getParam(this->ns_ + "/Jump_idx", this->Jump_idx)){
+			this->Jump_idx = 5;
+			cout << "[dyn_obs_planner]: Jump_idx. Use default 3.0." << endl;
+		}else{
+			cout << "[dyn_obs_planner]: Jump_idx is set to: " << this->Jump_idx << endl;
+		}
         if (not this->nh_.getParam(this->ns_ + "/factor_of_safeZone", this->factor_of_safeZone)){
 			this->factor_of_safeZone = 3.0;
 			cout << "[dyn_obs_planner]: factor_of_safeZone. Use default 3.0." << endl;
@@ -211,7 +224,7 @@ namespace dynamic_obstacle_planner{
 
 		// visualization
 		this->visDynObsTimer_ = this->nh_.createTimer(ros::Duration(this->DynObs_rate), &dyn_obs_planner::dynObsCB, this);
-		this->visDynObsTimer_2_ = this->nh_.createTimer(ros::Duration(this->DynObs_rate), &dyn_obs_planner::dynObsCB_2, this);
+		this->visDynObsTimer_2_ = this->nh_.createTimer(ros::Duration(this->DynObs_rate_2), &dyn_obs_planner::dynObsCB_2, this);
         
         if (this->Debug){
             this->visPseudoRobTimer_ = this->nh_.createTimer(ros::Duration(this->PseudoRob_rate), &dyn_obs_planner::pseudoRobCB, this);
@@ -267,6 +280,7 @@ namespace dynamic_obstacle_planner{
             rewirePlan_vec_ptr = new vector<pair<double,double>>();
 
             this->near_dyn_obs = false;
+            this->near_dyn_obs_2 = false;
             this->tempGoal_is_On = false;
             this->pseudo_goal = false;
 
@@ -275,9 +289,6 @@ namespace dynamic_obstacle_planner{
         // Check whether I should swap to "residualPlan_vec_ptr"
 
         if (this->path_msg_.poses.size() == 0){
-        // if (not this->has_plan_to_execute) {
-
-
             // Means: Already achieved the tempGoal via PID or pesudoRob
             if (this->tempGoal_is_On) {
                 if (residualPlan_vec_ptr->size()>1) {
@@ -311,7 +322,7 @@ namespace dynamic_obstacle_planner{
             }
         }
 
-        if (this->replan_for_newGoal | this->near_dyn_obs) printf("Good TO Continue\n");
+        if (this->replan_for_newGoal | this->near_dyn_obs | this->near_dyn_obs_2) printf("Good TO Continue\n");
         else return;
 
         // Prepare "curPosi", "goalPosi"
@@ -331,7 +342,7 @@ namespace dynamic_obstacle_planner{
             this->PID_path_ref_index = 1; 
             this->replan_for_newGoal = false;     // Update flags
         }
-        else if (this->near_dyn_obs) {
+        else if (this->near_dyn_obs | this->near_dyn_obs_2) {
 
             refresh_NodeTable();
 
@@ -391,6 +402,7 @@ namespace dynamic_obstacle_planner{
 
             // === Reset Flag ===
             this->near_dyn_obs = false;
+            this->near_dyn_obs_2 = false;
             printf("==== near_dyn_obs is OFF by Rewiring ====\n");
         }
         
@@ -415,7 +427,7 @@ namespace dynamic_obstacle_planner{
 
         // If a valid last index was found, assign the value to tempGoalPosi
         if (last_index >= 0) {
-            interested_IDX = MIN(last_index+5, (plan2Publish_vec_ptr->size() - 1));
+            interested_IDX = MIN(last_index+this->Jump_idx, (plan2Publish_vec_ptr->size() - 1));
 
             bufferPair = (*plan2Publish_vec_ptr)[interested_IDX];
             if (get_distance(bufferPair, goalPosi) < get_distance(tempGoalPosi, goalPosi)) {
@@ -451,39 +463,44 @@ namespace dynamic_obstacle_planner{
         else curPosi = make_pair(this->odom_.pose.pose.position.x, this->odom_.pose.pose.position.y);
         
         // === First Dynamic Obstacle ===
-        dist_2 = get_distance(make_pair(obs_pos_x, obs_pos_y), tempGoalPosi);
+        if (near_dyn_obs) {
+            dist_2 = get_distance(make_pair(obs_pos_x, obs_pos_y), tempGoalPosi);
 
-        for (double r=0; r<=Barrier_Radius; r=r+0.01) {
-            for (int i = 0; i<=Barrier_Resolution; i++) {
-                Barrier_Angle = i * 2.0 * M_PI / Barrier_Resolution;
-                temp_x = obs_pos_x + r * cos(Barrier_Angle + Barrier_Orientation);
-                temp_y = obs_pos_y + r * sin(Barrier_Angle + Barrier_Orientation);
+            for (double r=0; r<=Barrier_Radius; r=r+0.01) {
+                for (int i = 0; i<=Barrier_Resolution; i++) {
+                    Barrier_Angle = i * 2.0 * M_PI / Barrier_Resolution;
+                    temp_x = obs_pos_x + r * cos(Barrier_Angle + Barrier_Orientation);
+                    temp_y = obs_pos_y + r * sin(Barrier_Angle + Barrier_Orientation);
 
-                dist_1 = get_distance(make_pair(temp_x, temp_y), tempGoalPosi);
+                    dist_1 = get_distance(make_pair(temp_x, temp_y), tempGoalPosi);
 
-                if (dist_2 < dist_1) {
-                    this->Barrier_pair_vec.push_back(make_pair(temp_x, temp_y));
+                    if (dist_2 < dist_1) {
+                        this->Barrier_pair_vec.push_back(make_pair(temp_x, temp_y));
+                    }
                 }
             }
+
         }
+        
 
         // === Second Dynamic Obstacle ===
-        dist_2 = get_distance(make_pair(obs_pos_x_2, obs_pos_y_2), tempGoalPosi);
+        if (near_dyn_obs_2) {
+            dist_2 = get_distance(make_pair(obs_pos_x_2, obs_pos_y_2), tempGoalPosi);
 
-        for (double r=0; r<=Barrier_Radius; r=r+0.01) {
-            for (int i = 0; i<=Barrier_Resolution; i++) {
-                Barrier_Angle = i * 2.0 * M_PI / Barrier_Resolution;
-                temp_x = obs_pos_x_2 + r * cos(Barrier_Angle + Barrier_Orientation);
-                temp_y = obs_pos_y_2 + r * sin(Barrier_Angle + Barrier_Orientation);
+            for (double r=0; r<=Barrier_Radius; r=r+0.01) {
+                for (int i = 0; i<=Barrier_Resolution; i++) {
+                    Barrier_Angle = i * 2.0 * M_PI / Barrier_Resolution;
+                    temp_x = obs_pos_x_2 + r * cos(Barrier_Angle + Barrier_Orientation);
+                    temp_y = obs_pos_y_2 + r * sin(Barrier_Angle + Barrier_Orientation);
 
-                dist_1 = get_distance(make_pair(temp_x, temp_y), tempGoalPosi);
+                    dist_1 = get_distance(make_pair(temp_x, temp_y), tempGoalPosi);
 
-                if (dist_2 < dist_1) {
-                    this->Barrier_pair_vec.push_back(make_pair(temp_x, temp_y));
+                    if (dist_2 < dist_1) {
+                        this->Barrier_pair_vec.push_back(make_pair(temp_x, temp_y));
+                    }
                 }
             }
         }
-
         // ===== Label all =====
         for (auto p: this->Barrier_pair_vec) {
             NodeTable[GETMAPINDEX(p.first, p.second,this->x_size)].is_Barrier_Obs = true;
@@ -640,7 +657,7 @@ namespace dynamic_obstacle_planner{
             double obs_2_goal = get_distance(obs_posi_2, goalPosi);
 
             if (rob_2_goal > obs_2_goal) {
-                this->near_dyn_obs = true;
+                this->near_dyn_obs_2 = true;
             }            
         }
 
@@ -688,18 +705,18 @@ namespace dynamic_obstacle_planner{
 
         // Based on the "obs_loop", either update or init dynObs.
         if (this->obs_loop_2 !=0 ) {
-            
-            if (this->obs_pos_x_2 > -0.5){
+
+            if (this->obs_pos_y_2 > 5.0){
                 this->move_direction_2 = true;
             }
-            if (this->obs_pos_x_2 < -5.0){
+            if (this->obs_pos_y_2 < 0.5){
                 this->move_direction_2 = false;
             }
             if(this->move_direction_2){
-                this->obs_pos_x_2 = (this->obs_pos_x_2)-0.1;
+                this->obs_pos_y_2 = (this->obs_pos_y_2)-0.1;
             }
-            if(!this->move_direction_2){
-                this->obs_pos_x_2 = (this->obs_pos_x_2)+0.1;
+            if(!this->move_direction){
+                this->obs_pos_y_2 = (this->obs_pos_y_2)+0.1;
             }
         }
         else {
@@ -721,7 +738,7 @@ namespace dynamic_obstacle_planner{
         }
     
         // Increment the obs_loop indicator by 1
-        this->obs_loop++;
+        this->obs_loop_2++;
 
         // Publish obs_pos to marker_2_
         this->marker_2_.pose.position.x = this->obs_pos_x_2;
@@ -932,7 +949,7 @@ namespace dynamic_obstacle_planner{
             double obs_2_goal = get_distance(obs_posi_2, goalPosi);
 
             if (rob_2_goal > obs_2_goal) {
-                this->near_dyn_obs = true;
+                this->near_dyn_obs_2 = true;
             }            
         }
 
