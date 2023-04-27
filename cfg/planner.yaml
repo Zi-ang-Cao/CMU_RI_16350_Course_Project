@@ -14,14 +14,22 @@ Barrier_Resolution: 400
 Barrier_Radius_Factor: 1.0
 # Barrier_Radius_Factor: 1.4  # Good Number!
 
+# === Additional Dyn Obs ===
+obs_initial_x_2: -1.0   # Initial X Pos of Dyn Obs
+obs_initial_y_2: 3.0     # Initial Y Pos of Dyn Obs
+
 # Barrier_Radius_Factor: 1.15
 
 
 # Dynamic Obstacle Parameter:
 obs_radius: 0.2
+obs_movable_range: 3.0 # Dyn Obs Movement Range
+
 obs_initial_x: -1   # Initial X Pos of Dyn Obs
 obs_initial_y: 3.0     # Initial Y Pos of Dyn Obs
-obs_movable_range: 3.0 # Dyn Obs Movement Range
+
+
+
 
 # Refresh Rate
 DynObs_rate: 0.8       # Dynamic Obstacle Publish Rate
