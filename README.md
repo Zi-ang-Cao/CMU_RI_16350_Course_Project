@@ -273,32 +273,4 @@ git push --set-upstream origin Ziang-debug
 git clone git@github.com:ice-bear-git/CMU_RI_16350_Course_Project.git -b ZiangCao
 
 
-""" Overwrite the local change and enfore the pull from remote repository """
-# Fetch the latest version of Code
-git fetch --all
-# Check current branch
-git branch
 
-# Pull from ZiangCao branch and Overwrite the local change
-git reset --hard origin/master
-git reset --hard origin/ZiangCao
-```
-
-### Enforce Git Push
-```Shell
-""" Use the -f or --force option with git push to enforce the change """
-# Make sure to replace <remote_name> with the name of the remote repository you're pushing to, 
-# and <branch_name> with the name of the branch you want to push to.
-git push -f <remote_name> <branch_name>
-
-# Here, "origin" = remote repository name; "ZiangCao" = branch name
-git push -f origin ZiangCao
-```
-
-### Git Basic
-```Shell
-git status
-git add .
-git commit -m "commit message"
-git push
-```
