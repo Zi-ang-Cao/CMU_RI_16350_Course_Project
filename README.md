@@ -7,15 +7,13 @@
 # Table of Content
 - [CMU 16350 Robot Planning Course\_Project](#cmu-16350-robot-planning-course_project)
 - [Table of Content](#table-of-content)
+  - [Installation](#installation) 
+   - [Necessary Packages]( 
   - [Performance](#performance)
-  - [How to execute the code](#how-to-execute-the-code)
+  - [How to execute the package](#how-to-execute-the-package)
     - [Terminal Command](#terminal-command)
       - [Specify "TURTLEBOT3\_MODEL" in launch file.](#specify-turtlebot3_model-in-launch-file)
-      - [Run with multiple Ros workspace.](#run-with-multiple-ros-workspace)
-    - [How to enable multiple Dynamic Obstacles](#how-to-enable-multiple-dynamic-obstacles)
-  - [Install Instruction](#install-instruction)
-    - [ROS Neotic](#ros-neotic)
-
+      - [How to enable multiple Dynamic Obstacles](#how-to-enable-multiple-dynamic-obstacles)
 
 
 # Installation
@@ -34,7 +32,7 @@ git clone git@github.com:ice-bear-git/CMU_RI_16350_Course_Project.git
 
 # Performance
 
-# How to execute the code
+# How to execute the package
 ## Terminal Command
 ```Shell
 cd ~/catkin_ws/src
