@@ -10,7 +10,7 @@
   - [Installation](#installation) 
     - [Necessary Packages](#necessary-packages)
     - [Recommended Method of Installation](#recommended-method-of-installation) 
-  - [Performance](#performance)
+  - [Results](#results)
   - [How to execute the package](#how-to-execute-the-package)
     - [Terminal Command](#terminal-command)
       - [Specify "TURTLEBOT3\_MODEL" in launch file.](#specify-turtlebot3_model-in-launch-file)
@@ -32,7 +32,7 @@ git clone git@github.com:ice-bear-git/CMU_RI_16350_Course_Project.git
 ```
 
 # Results
-
+<img src="/results.png" title="Partial Re-Planning">
 
 # How to execute the package
 ## Terminal Command
