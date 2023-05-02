@@ -280,10 +280,7 @@ namespace dynamic_obstacle_planner{
             rewirePlan_vec_ptr = new vector<pair<double,double>>();
 
             this->near_dyn_obs = false;
-<<<<<<< HEAD
-=======
             this->near_dyn_obs_2 = false;
->>>>>>> b4a4987d1bb2308dae279ed8aeff8642cd8a789d
             this->tempGoal_is_On = false;
             this->pseudo_goal = false;
 
@@ -292,12 +289,6 @@ namespace dynamic_obstacle_planner{
         // Check whether I should swap to "residualPlan_vec_ptr"
 
         if (this->path_msg_.poses.size() == 0){
-<<<<<<< HEAD
-        // if (not this->has_plan_to_execute) {
-
-
-=======
->>>>>>> b4a4987d1bb2308dae279ed8aeff8642cd8a789d
             // Means: Already achieved the tempGoal via PID or pesudoRob
             if (this->tempGoal_is_On) {
                 if (residualPlan_vec_ptr->size()>1) {
@@ -331,11 +322,7 @@ namespace dynamic_obstacle_planner{
             }
         }
 
-<<<<<<< HEAD
-        if (this->replan_for_newGoal | this->near_dyn_obs) printf("Good TO Continue\n");
-=======
         if (this->replan_for_newGoal | this->near_dyn_obs | this->near_dyn_obs_2) printf("Good TO Continue\n");
->>>>>>> b4a4987d1bb2308dae279ed8aeff8642cd8a789d
         else return;
 
         // Prepare "curPosi", "goalPosi"
@@ -415,10 +402,7 @@ namespace dynamic_obstacle_planner{
 
             // === Reset Flag ===
             this->near_dyn_obs = false;
-<<<<<<< HEAD
-=======
             this->near_dyn_obs_2 = false;
->>>>>>> b4a4987d1bb2308dae279ed8aeff8642cd8a789d
             printf("==== near_dyn_obs is OFF by Rewiring ====\n");
         }
         
@@ -443,11 +427,7 @@ namespace dynamic_obstacle_planner{
 
         // If a valid last index was found, assign the value to tempGoalPosi
         if (last_index >= 0) {
-<<<<<<< HEAD
-            interested_IDX = MIN(last_index+5, (plan2Publish_vec_ptr->size() - 1));
-=======
             interested_IDX = MIN(last_index+this->Jump_idx, (plan2Publish_vec_ptr->size() - 1));
->>>>>>> b4a4987d1bb2308dae279ed8aeff8642cd8a789d
 
             bufferPair = (*plan2Publish_vec_ptr)[interested_IDX];
             if (get_distance(bufferPair, goalPosi) < get_distance(tempGoalPosi, goalPosi)) {
@@ -478,30 +458,6 @@ namespace dynamic_obstacle_planner{
         // Generate points along the circle
         double temp_x, temp_y;
         double dist_1, dist_2;
-<<<<<<< HEAD
-
-        if (this->Debug) curPosi = make_pair(this->pseudo_rob_pos_x, this->pseudo_rob_pos_y);
-        else curPosi = make_pair(this->odom_.pose.pose.position.x, this->odom_.pose.pose.position.y);
-
-        dist_2 = get_distance(make_pair(obs_pos_x, obs_pos_y), tempGoalPosi);
-
-        for (double r=0; r<=Barrier_Radius; r=r+0.01) {
-            for (int i = 0; i<=Barrier_Resolution; i++) {
-                Barrier_Angle = i * 2.0 * M_PI / Barrier_Resolution;
-                temp_x = obs_pos_x + r * cos(Barrier_Angle + Barrier_Orientation);
-                temp_y = obs_pos_y + r * sin(Barrier_Angle + Barrier_Orientation);
-
-                dist_1 = get_distance(make_pair(temp_x, temp_y), tempGoalPosi);
-
-                if (dist_2 < dist_1) {
-                    this->Barrier_pair_vec.push_back(make_pair(temp_x, temp_y));
-                }
-
-                // this->Barrier_pair_vec.push_back(make_pair(temp_x+STEP_SIZE, temp_y+STEP_SIZE));
-                // this->Barrier_pair_vec.push_back(make_pair(temp_x-STEP_SIZE, temp_y-STEP_SIZE));
-                // this->Barrier_pair_vec.push_back(make_pair(temp_x-STEP_SIZE, temp_y+STEP_SIZE));
-                // this->Barrier_pair_vec.push_back(make_pair(temp_x+STEP_SIZE, temp_y-STEP_SIZE));
-=======
 
         if (this->Debug) curPosi = make_pair(this->pseudo_rob_pos_x, this->pseudo_rob_pos_y);
         else curPosi = make_pair(this->odom_.pose.pose.position.x, this->odom_.pose.pose.position.y);
@@ -522,7 +478,6 @@ namespace dynamic_obstacle_planner{
                         this->Barrier_pair_vec.push_back(make_pair(temp_x, temp_y));
                     }
                 }
->>>>>>> b4a4987d1bb2308dae279ed8aeff8642cd8a789d
             }
 
         }
@@ -686,13 +641,6 @@ namespace dynamic_obstacle_planner{
         if (this->Debug) curPosi = make_pair(this->pseudo_rob_pos_x, this->pseudo_rob_pos_y);
         else curPosi = make_pair(this->odom_.pose.pose.position.x, this->odom_.pose.pose.position.y);
 
-<<<<<<< HEAD
-        this->obs_distance_to_Rob = get_distance(make_pair(obs_pos_x, obs_pos_y), curPosi);
-
-        if (this->obs_distance_to_Rob <= this->replan_range) {
-            double rob_2_goal = get_distance(curPosi, goalPosi);
-            double obs_2_goal = get_distance(make_pair(obs_pos_x, obs_pos_y), goalPosi);
-=======
         // === First Dynamic Obstacle ===
         this->obs_posi = make_pair(obs_pos_x, obs_pos_y);
         this->obs_distance_to_Rob = get_distance(obs_posi, curPosi);
@@ -700,7 +648,6 @@ namespace dynamic_obstacle_planner{
         if (this->obs_distance_to_Rob <= this->replan_range) {
             double rob_2_goal = get_distance(curPosi, goalPosi);
             double obs_2_goal = get_distance(obs_posi, goalPosi);
->>>>>>> b4a4987d1bb2308dae279ed8aeff8642cd8a789d
 
             if (rob_2_goal > obs_2_goal) {
                 this->near_dyn_obs = true;
@@ -986,13 +933,6 @@ namespace dynamic_obstacle_planner{
         if (this->Debug) curPosi = make_pair(this->pseudo_rob_pos_x, this->pseudo_rob_pos_y);
         else curPosi = make_pair(this->odom_.pose.pose.position.x, this->odom_.pose.pose.position.y);
 
-<<<<<<< HEAD
-        this->obs_distance_to_Rob = get_distance(make_pair(obs_pos_x, obs_pos_y), curPosi);
-
-        if (this->obs_distance_to_Rob <= this->replan_range) {
-            double rob_2_goal = get_distance(curPosi, goalPosi);
-            double obs_2_goal = get_distance(make_pair(obs_pos_x, obs_pos_y), goalPosi);
-=======
         // === First Dynamic Obstacle ===
         this->obs_posi = make_pair(obs_pos_x, obs_pos_y);
         this->obs_distance_to_Rob = get_distance(obs_posi, curPosi);
@@ -1000,15 +940,12 @@ namespace dynamic_obstacle_planner{
         if (this->obs_distance_to_Rob <= this->replan_range) {
             double rob_2_goal = get_distance(curPosi, goalPosi);
             double obs_2_goal = get_distance(obs_posi, goalPosi);
->>>>>>> b4a4987d1bb2308dae279ed8aeff8642cd8a789d
 
             if (rob_2_goal > obs_2_goal) {
                 this->near_dyn_obs = true;
             }            
         }
 
-<<<<<<< HEAD
-=======
         // === Second Dynamic Obstacle ===
         this->obs_posi_2 = make_pair(obs_pos_x_2, obs_pos_y_2);
         this->obs_distance_to_Rob = get_distance(obs_posi_2, curPosi);
@@ -1023,7 +960,6 @@ namespace dynamic_obstacle_planner{
         }
 
 
->>>>>>> b4a4987d1bb2308dae279ed8aeff8642cd8a789d
 
 		//cout<<"PID CB" <<endl;
         //double fixed_time=;
@@ -1032,18 +968,11 @@ namespace dynamic_obstacle_planner{
 
         //printf("path_msg_.poses.size() = %d, with PID_path_ref_index=%d, cmd=%d\n", endIdx, PID_path_ref_index, cmd);
 
-<<<<<<< HEAD
-        this->obs_distance_to_Rob = sqrt(pow(this->obs_pos_x - this->odom_.pose.pose.position.x, 2) + pow(this->obs_pos_y - this->odom_.pose.pose.position.y, 2));
-        if (this->obs_distance_to_Rob <= this->replan_range) {
-            this->near_dyn_obs = true;
-        }
-=======
         // this->obs_distance_to_Rob = sqrt(pow(this->obs_pos_x - this->odom_.pose.pose.position.x, 2) + pow(this->obs_pos_y - this->odom_.pose.pose.position.y, 2));
         // if (this->obs_distance_to_Rob <= this->replan_range) {
         //     this->near_dyn_obs = true;
         // }
 
->>>>>>> b4a4987d1bb2308dae279ed8aeff8642cd8a789d
 		if (this->path_msg_.poses.size() != 0){
 		// if (endIdx != 0) {
 			// cmd 1 = angular turning, 2 = linear forward

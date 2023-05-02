@@ -11,21 +11,16 @@ REPLAN_STRATEG_Indicator: 1   # [0, 1, 2, 3] ...
 
 # === Rewiring ===
 Barrier_Resolution: 400
-<<<<<<< HEAD
 Barrier_Radius_Factor: 1.4
 # Barrier_Radius_Factor: 1.4  # Good Number!
 
-=======
-Barrier_Radius_Factor: 1.0
-# Barrier_Radius_Factor: 1.4  # Good Number!
 
 # === Additional Dyn Obs ===
 obs_initial_x_2: -1.0   # Initial X Pos of Dyn Obs
 obs_initial_y_2: 4.3     # Initial Y Pos of Dyn Obs
 DynObs_rate_2: 0.8       # Dynamic Obstacle Publish Rate
 Jump_idx: 2       # Dynamic Obstacle Publish Rate
->>>>>>> b4a4987d1bb2308dae279ed8aeff8642cd8a789d
-# Barrier_Radius_Factor: 1.15
+
 
 
 # Dynamic Obstacle Parameter:
