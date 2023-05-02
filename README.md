@@ -8,7 +8,8 @@
 - [CMU 16350 Robot Planning Course\_Project](#cmu-16350-robot-planning-course_project)
 - [Table of Content](#table-of-content)
   - [Installation](#installation) 
-   - [Necessary Packages]( 
+    - [Necessary Packages](#necessary-packages)
+    - [Recommended Method of Installation](#recommended-method-of-installation) 
   - [Performance](#performance)
   - [How to execute the package](#how-to-execute-the-package)
     - [Terminal Command](#terminal-command)
