@@ -28,7 +28,9 @@ installed the compatabile ROS version.
 2. Gazebo - * [Gazebo Installation](https://classic.gazebosim.org/tutorials?tut=ros_overview)
 
 ## Recommended Method of Installation
+```Shell
 git clone git@github.com:ice-bear-git/CMU_RI_16350_Course_Project.git
+```
 
 # Performance
 
