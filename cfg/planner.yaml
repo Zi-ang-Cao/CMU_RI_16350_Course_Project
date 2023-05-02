@@ -1,7 +1,7 @@
 
 # === Incremental Search ===
 # factor_of_safeZone: 2.0  # replan_range = factor_of_safeZone * offset_dyn_obs
-factor_of_safeZone: 1.8  # replan_range = factor_of_safeZone * offset_dyn_obs
+factor_of_safeZone: 1.7  # replan_range = factor_of_safeZone * offset_dyn_obs
 
 obs_marker_factor: 2.0
 
@@ -11,17 +11,32 @@ REPLAN_STRATEG_Indicator: 1   # [0, 1, 2, 3] ...
 
 # === Rewiring ===
 Barrier_Resolution: 400
+<<<<<<< HEAD
 Barrier_Radius_Factor: 1.4
 # Barrier_Radius_Factor: 1.4  # Good Number!
 
+=======
+Barrier_Radius_Factor: 1.0
+# Barrier_Radius_Factor: 1.4  # Good Number!
+
+# === Additional Dyn Obs ===
+obs_initial_x_2: -1.0   # Initial X Pos of Dyn Obs
+obs_initial_y_2: 4.3     # Initial Y Pos of Dyn Obs
+DynObs_rate_2: 0.8       # Dynamic Obstacle Publish Rate
+Jump_idx: 2       # Dynamic Obstacle Publish Rate
+>>>>>>> b4a4987d1bb2308dae279ed8aeff8642cd8a789d
 # Barrier_Radius_Factor: 1.15
 
 
 # Dynamic Obstacle Parameter:
 obs_radius: 0.2
-obs_initial_x: -1   # Initial X Pos of Dyn Obs
-obs_initial_y: 3.0     # Initial Y Pos of Dyn Obs
 obs_movable_range: 3.0 # Dyn Obs Movement Range
+
+obs_initial_x: -1   # Initial X Pos of Dyn Obs
+obs_initial_y: 2.0     # Initial Y Pos of Dyn Obs
+
+
+
 
 # Refresh Rate
 DynObs_rate: 3.5       # Dynamic Obstacle Publish Rate

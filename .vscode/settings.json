@@ -18,6 +18,15 @@
         "__node_handle": "cpp",
         "iostream": "cpp",
         "tuple": "cpp",
-        "type_traits": "cpp"
-    }
+        "type_traits": "cpp",
+        "cmath": "cpp"
+    },
+    "python.autoComplete.extraPaths": [
+        "/home/ziang/catkin_ws/devel/lib/python3/dist-packages",
+        "/opt/ros/noetic/lib/python3/dist-packages"
+    ],
+    "python.analysis.extraPaths": [
+        "/home/ziang/catkin_ws/devel/lib/python3/dist-packages",
+        "/opt/ros/noetic/lib/python3/dist-packages"
+    ]
 }

@@ -94,8 +94,11 @@ namespace dynamic_obstacle_planner{
 		bool pseudo_click;
 
 		// ==== visualize dynamic obstacle ====
+
 		visualization_msgs::Marker marker_;
 		uint32_t shape = visualization_msgs::Marker::CUBE;
+
+		pair<double, double> obs_posi;
 		int obs_loop = 0;
 		double obs_radius;
 		double obs_initial_x;
@@ -106,7 +109,6 @@ namespace dynamic_obstacle_planner{
 
 		double obs_movable_range;
 		double obs_distance_to_Rob;
-		double obs_distance_to_Rob_buffer;
 
 		double obs_pos_x;
 		double obs_pos_y;
@@ -116,6 +118,32 @@ namespace dynamic_obstacle_planner{
 		double obs_y_upperBound;
 		double obs_x_lowerBound;
 		double obs_y_lowerBound;
+
+
+		// ==== 2nd Dynamic Obstacle ====
+		double DynObs_rate_2;
+		ros::Timer visDynObsTimer_2_;
+		ros::Publisher ObsPub_2_;
+		void dynObsCB_2(const ros::TimerEvent&);
+		visualization_msgs::Marker marker_2_;
+		uint32_t shape_2 = visualization_msgs::Marker::CUBE;
+
+		bool near_dyn_obs_2 = false;
+
+		pair<double, double> obs_posi_2;
+
+		int obs_loop_2 = 0;
+		double obs_initial_x_2;
+		double obs_initial_y_2;
+		bool move_direction_2 = true;
+
+		double obs_pos_x_2;
+		double obs_pos_y_2;
+
+		// ==== find Temp Goal ====
+		int Jump_idx = 5;
+
+
 
 		// ==== COST MAP INFLATION & Safety Zone====
 		double rob_radius = 0.3;
