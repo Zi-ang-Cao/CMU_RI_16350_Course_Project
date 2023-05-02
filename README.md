@@ -30,6 +30,16 @@
     - [Enforce Git Push](#enforce-git-push)
     - [Git Basic](#git-basic)
 
+## Installation
+This package has been tested on Ubuntu 20.04 LTS with ROS [Noetic](http://wiki.ros.org/noetic). Make sure you have
+installed the compatabile ROS version.
+
+## Necessary Packages
+1. Turtlebot3 Simulation
+    a. * [TurtleBot3 Installation](https://emanual.robotis.com/docs/en/platform/turtlebot3/quick-start/) 
+3. Gazebo
+4. Rviz
+
 
 ## Performance
 
@@ -82,28 +92,7 @@ You might need to manually add topic in the Rviz to enable multiple dynamic obst
 
 ### ROS Neotic
 * [Install ROS1 Neotic on Ubuntu 20.04](https://wiki.ros.org/noetic/Installation/Ubuntu)
-```Shell
-sudo sh -c 'echo "deb http://packages.ros.org/ros/ubuntu $(lsb_release -sc) main" > /etc/apt/sources.list.d/ros-latest.list'
 
-sudo apt install curl # if you haven't already installed curl
-curl -s https://raw.githubusercontent.com/ros/rosdistro/master/ros.asc | sudo apt-key add -
-
-sudo apt update
-sudo apt install ros-noetic-desktop-full
-
-apt search ros-noetic
-
-source /opt/ros/noetic/setup.bash
-
-echo "source /opt/ros/noetic/setup.bash" >> ~/.bashrc
-source ~/.bashrc
-
-sudo apt install python3-rosdep python3-rosinstall python3-rosinstall-generator python3-wstool build-essential
-
-sudo apt install python3-rosdep
-sudo rosdep init
-rosdep update
-```
 #### Create a ROS Workspace
 ```Shell
 mkdir -p ~/catkin_ws/src
@@ -114,36 +103,9 @@ source devel/setup.bash
 echo $ROS_PACKAGE_PATH
 ```
 
-#### Create ROS Package
-* Recommend way to create a Tutorial
-```Shell
-cd ~/catkin_ws/src
-catkin_create_pkg beginner_tutorials std_msgs rospy roscpp
 
-cd ~/catkin_ws
-catkin_make
 
-. ~/catkin_ws/devel/setup.bash
 
-rospack depends1 beginner_tutorials 
-```
-
-#### Create Additional Catkin WorkSpace
-```Shell
-source /opt/ros/noetic/setup.bash
-# Must creat the "src" folder inside of the workspace before runing "catkin_make"
-mkdir -p ~/catkin_ws_CMU_16350/src
-
-git clone https://github.com/ros-simulation/gazebo_ros_pkgs.git -b noetic-devel
-git clone -b noetic-devel https://github.com/ROBOTIS-GIT/turtlebot3_simulations.git
-
-cd ~/catkin_ws_CMU_16350/
-catkin_make
-source devel/setup.bash
-echo $ROS_PACKAGE_PATH
-```
-
------------------
 
 ### ROS dependence
 
