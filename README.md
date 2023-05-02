@@ -174,48 +174,17 @@ cd ~/catkin_ws/
 catkin_make
 ```
 
-##### Testing Gazebo with ROS Integration
-```Shell
-source /opt/ros/noetic/setup.bash
-source ~/catkin_ws/devel/setup.bash
 
-# The Gazebo GUI should appear with nothing inside the viewing window.
-roscore &
-rosrun gazebo_ros gazebo
-
-# Expected packages
-rostopic list
-# /gazebo/link_states
-# /gazebo/model_states
-# /gazebo/parameter_descriptions
-# /gazebo/parameter_updates
-# /gazebo/set_link_state
-# /gazebo/set_model_state
-```
-
------------------
 
 #### TurtleBot3
 * [TurtleBot3 Installation](https://emanual.robotis.com/docs/en/platform/turtlebot3/quick-start/) 
-```Shell
-
-
-* [TurtleBot3 Simulation Setup](https://emanual.robotis.com/docs/en/platform/turtlebot3/simulation/)
-
-```Shell
-
-
 
 
 ## GitHub Command Instruction
 
 ### Setup Git SSH
 * [Guide](https://docs.github.com/en/authentication/connecting-to-github-with-ssh/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent?platform=linux)
-```Shell
 
-```Shell
 # Recommended Method of Installation
 git clone git@github.com:ice-bear-git/CMU_RI_16350_Course_Project.git -b ZiangCao
-
-
 
