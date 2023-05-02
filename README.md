@@ -32,7 +32,7 @@ git clone git@github.com:ice-bear-git/CMU_RI_16350_Course_Project.git
 ```
 
 # Results
-<img src="/results.png" title="Partial Re-Planning">
+<img src="/result.png" title="Partial Re-Planning">
 
 # How to execute the package
 ## Terminal Command
