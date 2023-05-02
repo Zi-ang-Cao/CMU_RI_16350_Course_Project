@@ -31,7 +31,8 @@ installed the compatabile ROS version.
 git clone git@github.com:ice-bear-git/CMU_RI_16350_Course_Project.git
 ```
 
-# Performance
+# Results
+
 
 # How to execute the package
 ## Terminal Command
