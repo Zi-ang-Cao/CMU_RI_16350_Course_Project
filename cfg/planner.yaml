@@ -25,7 +25,7 @@ obs_movable_range: 3.0 # Dyn Obs Movement Range
 
 # Refresh Rate
 DynObs_rate: 3.5       # Dynamic Obstacle Publish Rate
-# DynObs_rate: 0.5       # Dynamic Obstacle Publish Rate
+#DynObs_rate: 0.5       # Dynamic Obstacle Publish Rate
 PseudoRob_rate: 0.05   # Pseudo Robot Publish Rate
 # PseudoRob_rate: 0.1    # Pseudo Robot Publish Rate
 
