@@ -198,78 +198,23 @@ rostopic list
 #### TurtleBot3
 * [TurtleBot3 Installation](https://emanual.robotis.com/docs/en/platform/turtlebot3/quick-start/) 
 ```Shell
-sudo apt-get install ros-noetic-joy ros-noetic-teleop-twist-joy \
-  ros-noetic-teleop-twist-keyboard ros-noetic-laser-proc \
-  ros-noetic-rgbd-launch ros-noetic-rosserial-arduino \
-  ros-noetic-rosserial-python ros-noetic-rosserial-client \
-  ros-noetic-rosserial-msgs ros-noetic-amcl ros-noetic-map-server \
-  ros-noetic-move-base ros-noetic-urdf ros-noetic-xacro \
-  ros-noetic-compressed-image-transport ros-noetic-rqt* ros-noetic-rviz \
-  ros-noetic-gmapping ros-noetic-navigation ros-noetic-interactive-markers
 
-sudo apt install ros-noetic-dynamixel-sdk
-sudo apt install ros-noetic-turtlebot3-msgs
-sudo apt install ros-noetic-turtlebot3
-```
 
 * [TurtleBot3 Simulation Setup](https://emanual.robotis.com/docs/en/platform/turtlebot3/simulation/)
 
 ```Shell
-cd ~/catkin_ws/src/
-git clone -b noetic-devel https://github.com/ROBOTIS-GIT/turtlebot3_simulations.git
-cd ~/catkin_ws && catkin_make
-
-# Test
-export TURTLEBOT3_MODEL=waffle_pi
-roslaunch turtlebot3_gazebo turtlebot3_house.launch
-```
-
-* [SLAM Simulation](https://emanual.robotis.com/docs/en/platform/turtlebot3/slam_simulation/)
-```Shell
-# Test for SLAM
-# Launch Simulation World -- In one Tab
-export TURTLEBOT3_MODEL=burger
-roslaunch turtlebot3_gazebo turtlebot3_world.launch
-
-# Run SLAM Node
-export TURTLEBOT3_MODEL=burger
-roslaunch turtlebot3_slam turtlebot3_slam.launch slam_methods:=gmapping
-```
-
------------------
 
 
 
-## GitHub Commend Line
+
+## GitHub Command Instruction
 
 ### Setup Git SSH
 * [Guide](https://docs.github.com/en/authentication/connecting-to-github-with-ssh/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent?platform=linux)
 ```Shell
-# ssh-keygen -t rsa -b 4096 -C <GitHub Email>
-ssh-keygen -t rsa -b 4096 -C "ZIC25@pitt.edu"
-eval "$(ssh-agent -s)"
-ssh-add ~/.ssh/id_ed25519
 
-git config --global user.email "ZIC25@pitt.edu"
-git config --global user.name "Zi-ang Cao"
-```
-
-### Change/Create Git Branch
 ```Shell
-# Create a new branch
-git branch Ziang-debug
-
-# Switch to this new branch
-git checkout Ziang-debug
-
-# Publish this new branch to online.
-git push --set-upstream origin Ziang-debug
-```
-
-
-### Enforce Git Pull
-```Shell
-# Clone from a certain branch
+# Recommended Method of Installation
 git clone git@github.com:ice-bear-git/CMU_RI_16350_Course_Project.git -b ZiangCao
 
 
