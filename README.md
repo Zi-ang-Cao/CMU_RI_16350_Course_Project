@@ -7,10 +7,10 @@
 # Table of Content
 - [CMU 16350 Robot Planning Course\_Project](#cmu-16350-robot-planning-course_project)
 - [Table of Content](#table-of-content)
+  - [Result](#result)
   - [Environment](#environment)
     - [Necessary Packages](#necessary-packages)
     - [Supporting Config Instruction](#supporting-config-instruction)
-  - [Result](#result)
   - [How to execute the package](#how-to-execute-the-package)
     - [Basic](#basic)
       - [Single Dynamic Obstacles](#single-dynamic-obstacles)
@@ -18,6 +18,18 @@
     - [Advanced](#advanced)
       - [Specify "TURTLEBOT3\_MODEL" in launch file.](#specify-turtlebot3_model-in-launch-file)
       - [Run with multiple Ros workspace.](#run-with-multiple-ros-workspace)
+
+
+## Result
+Red lines represent the replanning efforts. Meanwhile, We have both ideal pseudo Robot agent and more realistic PIT agent.  
+
+* Single Dynamic Obstacles  
+  <img src="/Support/result.png" title="Partial Re-Planning">
+
+* Multiple Dynamic Obstacles
+  - Total AStar -- [youtube](https://www.youtube.com/watch?v=cTupE73wB80)
+  - Partial Astar -- [youtube](https://www.youtube.com/watch?v=e3G6Rci00EY)
+    + Simplified Incremental Search
 
 
 ## Environment
@@ -35,21 +47,10 @@ git clone https://github.com/Zi-ang-Cao/CMU_RI_16350_Course_Project.git
 * gazebo_ros_pkgs -- [gazebo_ros_pkgs Installation](https://classic.gazebosim.org/tutorials?tut=ros_installing&cat=connect_ros)
 
 ### Supporting Config Instruction
-* [GitHub Command Line]()
-* [ROS Relevant Setup]()
+* [GitHub Command Line](https://github.com/Zi-ang-Cao/CMU_RI_16350_Course_Project/blob/main/Support/GitHub%20Command%20Line.md)
+* [ROS Relevant Setup](https://github.com/Zi-ang-Cao/CMU_RI_16350_Course_Project/blob/main/Support/ROS%20Relevant%20Setup.md)
 * [How to debug ROS with VSCode](https://github.com/ms-iot/vscode-ros/blob/master/doc/debug-support.md)
 
-
-## Result
-Red lines represent the replanning efforts. Meanwhile, We have both ideal pseudo Robot agent and more realistic PIT agent.  
-
-* Single Dynamic Obstacles  
-  <img src="/Support/result.png" title="Partial Re-Planning">
-
-* Multiple Dynamic Obstacles
-  - Total AStar -- [youtube](https://www.youtube.com/watch?v=cTupE73wB80)
-  - Partial Astar -- [youtube](https://www.youtube.com/watch?v=e3G6Rci00EY)
-    + Simplified Incremental Search
 
 
 ## How to execute the package
